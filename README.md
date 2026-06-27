@@ -39,6 +39,8 @@ For bigger work, Loopy ships six optional subagents under `.codex/agents/` — e
 
 **Summon the crew** with `loopy team <task>` — or `loopy crew`, the one-word `loopycrew`, or just `ultrawork <task>`. Loopy fans the work out across the lanes in parallel and still proves every piece before it calls it done. A plain `loopy <task>` stays solo and only delegates when the slices are clearly independent.
 
+For full crew runs, the parent records each lane with `loopy loop handoff`, checks `loopy loop fleet --json`, and keeps the human final gate report separate from the machine gate JSON. A gate report can be Markdown evidence; `loopy loop finish --artifact` is for `.json` quality gate output.
+
 When a tracked crew handoff finishes, Loopy can print one original crew line before the normal `handoff` or `fleet` status. It follows the user's language from the assignment or scoped brief when it matches the supported catalog, with English as the safe fallback. The line is personality only; the verdict, evidence artifact, outstanding list, and attention list stay authoritative.
 
 ## Install

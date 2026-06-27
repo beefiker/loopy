@@ -193,6 +193,7 @@ export async function reviewLoop(cwd, argv) {
   const scope = readScope(argv);
   const status = readReviewStatus(required(argv, "--status"));
   const artifact = resolveEvidenceOutputPath(cwd, required(argv, "--artifact"), scope);
+  requireQualityGateJsonArtifact(artifact.relativePath);
   const notes = readFlag(argv, "--notes")?.trim();
   const plan = await readPlan(cwd, scope);
   requireAllPlanCriteriaPass(plan);
@@ -371,6 +372,14 @@ function readCheckpointStatus(value) {
 function readReviewStatus(value) {
   if (value === "passed") return value;
   throw new Error("--status must be passed.");
+}
+
+function requireQualityGateJsonArtifact(path) {
+  if (path.toLowerCase().endsWith(".json")) return;
+  throw new Error([
+    "Quality gate artifact must use a .json path.",
+    "Use `loopy loop report --artifact <path>.md` or a separate worker report for Markdown evidence."
+  ].join(" "));
 }
 
 async function readQualityGate(cwd, path, scope) {

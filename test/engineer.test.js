@@ -83,6 +83,14 @@ test("runUserPromptSubmitHook injects the crew fan-out playbook in team mode, wi
   assert.match(context, /"jinbe"/);
   assert.match(context, /"robin"/);
   assert.match(context, /"nami"/);
+  assert.match(context, /requested repository path differs from `cwd`/);
+  assert.match(context, /implementation worker must own a real bounded implementation slice/);
+  assert.match(context, /jinbe-final-gate-report\.md/);
+  assert.match(context, /\.loopy\/evidence\/gate\.json/);
+  assert.match(context, /role completion line/);
+  assert.match(context, /git status --short --untracked-files=all/);
+  assert.match(context, /git ls-files --others --exclude-standard/);
+  assert.match(context, /run `loopy loop fleet --json` before the final gate/);
   // The team keyword is stripped from the brief that seeds the loop.
   assert.match(context, /loopy loop begin --brief 'migrate the auth module'/);
   assert.equal(existsSync(join(repo, ".loopy", "goals.json")), false);
@@ -146,4 +154,5 @@ test("runUserPromptSubmitHook re-injects the crew playbook when resuming with lo
   assert.match(context, /A loop is already in progress/);
   assert.match(context, /Crew fan-out \(team mode\)/);
   assert.match(context, /multi_agent_v1\.spawn_agent/);
+  assert.match(context, /run `loopy loop fleet --json` before the final gate/);
 });

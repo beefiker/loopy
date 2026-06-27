@@ -88,7 +88,7 @@ function renderStart(payload, orchestrate) {
       "- Start: `loopy loop begin --brief \"<their answer>\" --mode light --json`.",
       "- Follow `loopy loop guide --json` for each next command; do not ask the user to run Loopy.",
       "- Prove every criterion with `loopy loop prove -- <validation-command>` (real artifacts only).",
-      "- Preflight `loopy loop check`, then `loopy loop finish --evidence \"<summary>\" --json`.",
+      "- Preflight `loopy loop check`, then `loopy loop finish --evidence \"<summary>\" --artifact .loopy/evidence/gate.json --json`.",
       ...(orchestrate ? ["", ...orchestrationLines()] : [])
     ].join("\n");
   }
@@ -103,7 +103,7 @@ function renderStart(payload, orchestrate) {
     `- Start now: \`loopy loop begin --brief ${shellQuote(brief)} --mode light --json\`.`,
     "- Drive each step with `loopy loop guide --json` and act on its next command.",
     "- Prove every criterion with `loopy loop prove -- <validation-command>`; record real artifacts only.",
-    "- Preflight with `loopy loop check`, then complete with `loopy loop finish --evidence \"<summary>\" --json`.",
+    "- Preflight with `loopy loop check`, then complete with `loopy loop finish --evidence \"<summary>\" --artifact .loopy/evidence/gate.json --json`.",
     "- Report progress in plain terms (criteria proven, next step), not raw command dumps.",
     "- Keep it light unless the task needs heavier review. The Stop hook blocks completion until evidence exists.",
     "",
@@ -146,14 +146,19 @@ function baselineDelegationLine() {
 function orchestrationLines() {
   return [
     "Crew fan-out (team mode):",
+    "- If the requested repository path differs from `cwd`, verify and state the exact target path before editing or dispatching workers.",
     "- This task is big enough to split. Delegate independent slices to parallel workers instead of doing everything in one thread.",
     "- Spawn each worker with the host's native tool, and ALWAYS set `agent_type` to the crew role so the child loads that role's model and instructions, e.g.: `multi_agent_v1.spawn_agent({\"message\": \"TASK: act as franky — <self-contained assignment>\", \"agent_type\": \"franky\", \"fork_context\": false})`.",
     "- Match `agent_type` to the lane, one per crew role: `agent_type: \"franky\"` builds one slice, `\"zoro\"` reviews a diff, `\"usopp\"` tests, `\"jinbe\"` gates, `\"robin\"` audits (read-only), `\"nami\"` finds files (read-only). Dispatch `nami` first to scope a slice before assigning `franky`.",
     "- Role routing by name is best-effort across hosts, so ALSO make the `message` self-contained: lead with `TASK: act as <role>` and paste all needed context, so the worker behaves correctly even if the host ignores `agent_type`.",
+    "- The implementation worker must own a real bounded implementation slice before the parent edits or completes that slice. If no safe independent implementation slice exists, stay solo or use a smaller read-only crew.",
     "- Parallelize read-heavy lanes first (`nami` navigation, `zoro` review, `usopp` QA); never run two editors on overlapping files at once.",
     "- Each worker ends its report with `LOOPY_EVIDENCE: <path-under-active-evidence-root>` (`robin` uses `LOOPY_AUDIT:`). Collect them with `multi_agent_v1.wait_agent`; treat a running child as alive, not a timeout.",
-    "- You own the plan: record a criterion pass only from a real artifact via `loopy loop prove` or `loopy loop evidence`, never from a worker's claim alone. Track each dispatch with `loopy loop handoff` and reconcile with `loopy loop fleet --json`.",
-    "- Keep the Loopy loop the source of truth: you still begin, prove, check, and finish through the CLI yourself."
+    "- After each worker returns, show a concise role completion line with role, normalized verdict, artifact path, risk, and next action before closing or respawning that lane.",
+    "- Give `jinbe` a Markdown final gate report such as `.loopy/evidence/jinbe-final-gate-report.md`; keep it separate from the machine quality gate `.loopy/evidence/gate.json`.",
+    "- You own the plan: record a criterion pass only from a real artifact via `loopy loop prove` or `loopy loop evidence`, never from a worker's claim alone. Track each dispatch with `loopy loop handoff` and run `loopy loop fleet --json` before the final gate.",
+    "- Before the final summary, run `git status --short --untracked-files=all` and `git ls-files --others --exclude-standard` so untracked evidence, scripts, and reports are not omitted.",
+    "- Keep the Loopy loop the source of truth: you still begin, prove, check, and finish through the CLI yourself with `loopy loop finish --evidence \"<summary>\" --artifact .loopy/evidence/gate.json --json`."
   ];
 }
 

@@ -92,6 +92,22 @@ test("project custom agents define Loopy subagent workflow", async () => {
   }
 });
 
+test("public docs encode crew retrospective guardrails", async () => {
+  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
+  const hostContract = await readFile("docs/loopy-host-contract.md", "utf8");
+
+  assert.match(skill, /jinbe-final-gate-report\.md/);
+  assert.match(skill, /\.loopy\/evidence\/gate\.json/);
+  assert.match(skill, /quality gate artifact.*JSON/s);
+  assert.match(skill, /For full crew, record each dispatch with `loopy loop handoff/s);
+  assert.match(skill, /run `loopy loop fleet --json` before the final gate/);
+  assert.match(skill, /must own a real bounded implementation slice before the parent edits or completes that slice/);
+  assert.match(skill, /If the requested repository path differs from `cwd`/);
+  assert.match(skill, /git status --short --untracked-files=all/);
+  assert.match(skill, /git ls-files --others --exclude-standard/);
+  assert.match(hostContract, /full-crew handoffs are mandatory bookkeeping/);
+});
+
 test("public docs describe crew lines as presentation-only status", async () => {
   const readme = await readFile("README.md", "utf8");
   const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");

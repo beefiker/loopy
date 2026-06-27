@@ -30,7 +30,7 @@ test("CLI loop help shows the shortest evidence-backed flow", () => {
   assert.match(result.stdout, /loopy loop begin --brief "Ship the task" --json/);
   assert.match(result.stdout, /loopy loop prove -- <validation-command>/);
   assert.match(result.stdout, /loopy loop check/);
-  assert.match(result.stdout, /loopy loop finish --evidence "criteria passed" --json/);
+  assert.match(result.stdout, /loopy loop finish --evidence "criteria passed" --artifact \.loopy\/evidence\/gate\.json --json/);
   assert.match(result.stdout, /Pass evidence must be a non-empty artifact under the active evidence root\./);
 });
 

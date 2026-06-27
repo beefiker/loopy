@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -314,6 +315,27 @@ test("CLI loop finish creates a gate and completes the loop", async () => {
   assert.equal(parsed.report.artifact.relativePath, ".loopy/evidence/report.md");
   assert.equal(parsed.guide.state, "complete");
   assert.equal(parsed.guide.nextAction.command, "loopy loop status --json");
+});
+
+test("CLI loop finish rejects markdown paths for the quality gate artifact", async () => {
+  const repo = await tempRepo();
+  await mkdir(repo, { recursive: true });
+  await createLoop(repo, ["--brief", "Ship"]);
+  await evidenceLoop(repo, ["--goal-id", "G001", "--criterion-id", "C001", "--status", "pass", "--artifact", await writeEvidence(repo, "c1.txt")]);
+  await evidenceLoop(repo, ["--goal-id", "G001", "--criterion-id", "C002", "--status", "pass", "--artifact", await writeEvidence(repo, "c2.txt")]);
+
+  const result = runCli([
+    "loop",
+    "finish",
+    "--evidence",
+    "criteria passed",
+    "--artifact",
+    ".loopy/evidence/jinbe-final-gate.md"
+  ], { cwd: repo });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Quality gate artifact must use a \.json path/);
+  assert.equal(existsSync(join(repo, ".loopy", "evidence", "jinbe-final-gate.md")), false);
 });
 
 test("CLI loop finish text shows the complete guide", async () => {

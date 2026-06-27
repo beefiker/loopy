@@ -15,6 +15,12 @@ or not matched by a hook.
 
 Loopy provisions and tracks these agents; the host spawns them. Loopy never spawns.
 
+## Full-crew bookkeeping
+
+For `loopy team`, `loopy crew`, `loopycrew`, and `ultrawork` runs, full-crew handoffs are mandatory bookkeeping even though they are not a spawn mechanism. The parent records each dispatch with `loopy loop handoff`, updates the same handoff when the worker returns, and runs `loopy loop fleet --json` before the final gate. The fleet summary is the durable place to see accepted, rejected, needs-context, and still-outstanding lanes before the parent records completion evidence.
+
+The parent must still show a concise human-facing completion summary for each role: role, normalized verdict, artifact path, risk, and next action. Raw host close-agent output is not evidence and should not be the user's only signal that a role finished.
+
 ## Role routing is not guaranteed
 
 The host's spawn surface (for example `multi_agent_v1.spawn_agent`) accepts a `message` plus
