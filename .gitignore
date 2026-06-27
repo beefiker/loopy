@@ -3,3 +3,4 @@ node_modules/
 .loopy/
 coverage/
 *.log
+.codex-marketplace-install.json

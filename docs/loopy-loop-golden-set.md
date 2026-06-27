@@ -60,7 +60,7 @@ Total: 100 points.
 | `.codex/agents/jinbe.toml` | `test/docs.test.js`, audit coverage. | Must define the Loopy gate-review role, active evidence root, advisory model defaults, and `LOOPY_EVIDENCE` receipt. |
 | `.codex/agents/usopp.toml` | `test/docs.test.js`, audit coverage. | Must define the Loopy QA role, active evidence root, advisory model defaults, and `LOOPY_EVIDENCE` receipt. |
 | `.codex-plugin/plugin.json` | `test/plugin.test.js`, doctor plugin manifest check. | Must expose `./skills/` and the packaged Loopy hook files, including opt-in Stop. |
-| `.gitignore` | Doctor runtime-boundary ignored samples. | `.loopy/`, logs, coverage, dependencies, and OS noise must stay out of source control. |
+| `.gitignore` | Doctor runtime-boundary ignored samples and installed-cache docs coverage. | `.loopy/`, logs, coverage, dependencies, OS noise, and Codex marketplace metadata must stay out of source control. |
 | `LICENSE` | Audit coverage and reviewability check. | Must remain a source file with no runtime implementation content. |
 | `manual-ko.pdf` | Audit coverage. | Must remain a documentation artifact, not runtime plugin logic. |
 | `manual.pdf` | Audit coverage. | Must remain a documentation artifact, not runtime plugin logic. |
