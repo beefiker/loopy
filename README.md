@@ -1,0 +1,62 @@
+<div align="center">
+
+# 🌀 Loopy
+
+**Loop engineering for Codex.** Type `loopy <task>` — an agent does the work, proves each piece with real evidence, and only then says it's done.
+
+<img src=".github/assets/franky.png" width="92" alt="franky" />&nbsp;<img src=".github/assets/zoro.png" width="92" alt="zoro" />&nbsp;<img src=".github/assets/usopp.png" width="92" alt="usopp" />&nbsp;<img src=".github/assets/jinbe.png" width="92" alt="jinbe" />&nbsp;<img src=".github/assets/robin.png" width="92" alt="robin" />&nbsp;<img src=".github/assets/nami.png" width="92" alt="nami" />
+
+<sub><b>the crew</b> — optional subagents, one job each</sub>
+
+</div>
+
+## Use it
+
+After installing, type your task in Codex with a leading `loopy`:
+
+```
+loopy add a /health endpoint that returns 200
+```
+
+The agent plans it, proves each piece with a real file, and reports back — you don't run any commands yourself.
+
+## The crew
+
+For bigger work, Loopy ships six optional subagents under `.codex/agents/` — each owns one lane. They install automatically with the plugin (no command needed); `loopy agents install` just re-copies them if you ever need it.
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src=".github/assets/franky.png" width="190" alt="franky" /><br /><b>franky</b><br /><sub>builds it</sub></td>
+    <td align="center" width="33%"><img src=".github/assets/zoro.png" width="190" alt="zoro" /><br /><b>zoro</b><br /><sub>reviews it</sub></td>
+    <td align="center" width="33%"><img src=".github/assets/usopp.png" width="190" alt="usopp" /><br /><b>usopp</b><br /><sub>tests it</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src=".github/assets/jinbe.png" width="190" alt="jinbe" /><br /><b>jinbe</b><br /><sub>gates it</sub></td>
+    <td align="center"><img src=".github/assets/robin.png" width="190" alt="robin" /><br /><b>robin</b><br /><sub>audits it</sub></td>
+    <td align="center"><img src=".github/assets/nami.png" width="190" alt="nami" /><br /><b>nami</b><br /><sub>finds it</sub></td>
+  </tr>
+</table>
+
+**Summon the crew** with `loopy team <task>` — or `loopy crew`, the one-word `loopycrew`, or just `ultrawork <task>`. Loopy fans the work out across the lanes in parallel and still proves every piece before it calls it done. A plain `loopy <task>` stays solo and only delegates when the slices are clearly independent.
+
+## Install
+
+Needs Node.js ≥ 20. Loopy is dependency-free — zero runtime dependencies, just Node.
+
+```
+codex plugin marketplace add https://github.com/beefiker/loopy
+codex plugin add loopy@beefiker
+```
+
+Restart Codex twice: approve the hooks, then reload. The first approved session runs a `SessionStart` hook that does a one-time bootstrap — it installs the `loopy` command and the agents. If `loopy` isn't found, its folder isn't on your `PATH`; the bootstrap prints the exact line to add. Check everything with `loopy doctor`.
+
+Installing from a checkout instead? Run `node src/cli.js install --json`.
+
+## Manual
+
+- 📖 [Loopy Field Manual — English](manual.pdf)
+- 📖 [Loopy 필드 매뉴얼 — 한국어](manual-ko.pdf)
+
+---
+
+<sub>Built on the Codex marketplace bootstrap shape of <a href="https://github.com/code-yeongyu/lazycodex">LazyCodex</a>. MIT licensed.</sub>

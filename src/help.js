@@ -1,0 +1,31 @@
+export function helpText() {
+  return [
+    "Usage:",
+    "  loopy loop begin --brief TEXT [--mode light|strict] [--session-id ID] [--force]",
+    "  loopy loop create --brief TEXT [--mode light|strict] [--session-id ID] [--force]",
+    "  loopy loop next [--session-id ID] [--json]",
+    "  loopy loop guide [--session-id ID] [--json]",
+    "  loopy loop trace [--session-id ID] [--json]",
+    "  loopy loop report [--artifact PATH] [--session-id ID] [--json]",
+    "  loopy loop check [--session-id ID] [--json]",
+    "  loopy loop evidence --goal-id ID --criterion-id ID --status pass|fail|blocked --artifact PATH [--notes TEXT] [--session-id ID]",
+    "  loopy loop capture --goal-id ID --criterion-id ID [--artifact PATH] [--notes TEXT] [--session-id ID] -- COMMAND [ARGS...]",
+    "  loopy loop prove [--artifact PATH] [--notes TEXT] [--session-id ID] -- COMMAND [ARGS...]",
+    "  loopy loop review --status passed --artifact PATH [--notes TEXT] [--session-id ID]",
+    "  loopy loop checkpoint --goal-id ID --status complete|failed|blocked --evidence TEXT [--quality-gate PATH] [--session-id ID]",
+    "  loopy loop finish [--evidence TEXT] [--artifact PATH] [--notes TEXT] [--session-id ID]",
+    "  loopy loop status [--session-id ID] [--json]",
+    "  loopy agents install [--target PATH] [--force] [--json]",
+    "",
+    "Quick flow:",
+    "  loopy loop begin --brief \"Ship the task\" --json",
+    "  loopy loop prove -- <validation-command>",
+    "  loopy loop check",
+    "  loopy loop finish --evidence \"criteria passed\" --json",
+    "",
+    "Evidence rule:",
+    "  Pass evidence must be a non-empty artifact under the active evidence root.",
+    "  Run `loopy loop guide --json` anytime to get the exact next action and proof target.",
+    ""
+  ].join("\n");
+}
