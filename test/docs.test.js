@@ -31,12 +31,16 @@ test("public docs describe Loopy-native doctor checks", async () => {
   const audit = await readFile("docs/loopy-file-audit.md", "utf8");
   const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
   const designAudit = await readFile("docs/loopy-design-audit.md", "utf8");
+  const modelPolicy = await readFile("docs/loopy-model-policy.md", "utf8");
 
   assert.match(audit, /Loopy-native boundary/i);
   assert.match(audit, /Compatibility boundary/i);
   assert.match(skill, /generic comparison scan/i);
+  assert.match(skill, /model policy/i);
   assert.match(designAudit, /## Design Decisions/);
   assert.match(designAudit, /## Compatibility Boundary/);
+  assert.match(modelPolicy, /steering, not proof/i);
+  assert.match(modelPolicy, /gpt-5\.4-mini/);
 });
 
 test("public docs describe real marketplace install and bootstrap", async () => {
@@ -69,12 +73,7 @@ test("public docs describe loose prompt triggers as guidance-only", async () => 
 test("project custom agents define Loopy subagent workflow", async () => {
   const readme = await readFile("README.md", "utf8");
   const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
-  const agents = [
-    "franky",
-    "zoro",
-    "usopp",
-    "jinbe"
-  ];
+  const agents = ["franky", "zoro", "usopp", "jinbe", "robin", "nami"];
 
   assert.match(readme, /\.codex\/agents/);
   assert.match(readme, /loopy agents install/);
@@ -85,10 +84,29 @@ test("project custom agents define Loopy subagent workflow", async () => {
   for (const agent of agents) {
     const content = await readFile(`.codex/agents/${agent}.toml`, "utf8");
     assert.match(content, new RegExp(`name = "${agent}"`));
+    assert.match(content, /model = "gpt-5/);
+    assert.match(content, /model_reasoning_effort = "(low|high|xhigh)"/);
+    assert.match(content, /service_tier = "(priority|fast)"/);
     assert.match(content, /developer_instructions = """/);
-    assert.match(content, /active evidence root/);
-    assert.match(content, /LOOPY_EVIDENCE: <path-under-active-evidence-root>/);
+    if (agent !== "nami") assert.match(content, /active evidence root/);
   }
+});
+
+test("public docs describe crew lines as presentation-only status", async () => {
+  const readme = await readFile("README.md", "utf8");
+  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
+  const crewLines = await readFile("docs/loopy-crew-lines.md", "utf8");
+  const designAudit = await readFile("docs/loopy-design-audit.md", "utf8");
+
+  assert.match(readme, /one original crew line/);
+  assert.match(readme, /supported catalog/);
+  assert.match(skill, /presentation only/);
+  assert.match(skill, /LOOPY_CREW_LANGUAGE/);
+  assert.match(crewLines, /Do not copy source-character quotes/);
+  assert.match(crewLines, /`en`, `ko`, `ja`, `zh`, `es`, `fr`, `de`, `it`, `pt`, `id`, `hi`, `tr`, `vi`, `ru`, `ar`, and `th`/);
+  assert.match(crewLines, /fall back to English/);
+  assert.match(crewLines, /Evidence artifacts.*remain the authority/s);
+  assert.match(designAudit, /`crew-lines`/);
 });
 
 test("loop golden set lists every Git-visible file with strict evidence", async () => {

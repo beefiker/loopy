@@ -19,6 +19,7 @@ import { formatDoctor, runDoctor } from "./doctor.js";
 import { finishLoop } from "./finish.js";
 import { formatGuideResult } from "./guide.js";
 import { fleetLoop, handoffLoop } from "./fleet.js";
+import { formatCrewLine } from "./crew-lines.js";
 import { proveLoop } from "./prove.js";
 import { reportLoop } from "./report.js";
 import { formatTraceResult, traceLoop } from "./trace.js";
@@ -226,12 +227,17 @@ function formatLoopResult(subcommand, result) {
     return `loopy finish: ${result.summary.aggregateComplete ? "complete" : result.goal.status}\n${formatGuideResult(result)}`;
   }
   if (subcommand === "handoff") {
-    return `loopy handoff: ${result.handoff.id} ${result.handoff.agent} -> ${result.handoff.status} [${result.handoff.normalizedVerdict}]\n`;
+    const crewLine = result.crewLine ? `${formatCrewLine(result.crewLine)}\n` : "";
+    return `${crewLine}loopy handoff: ${result.handoff.id} ${result.handoff.agent} -> ${result.handoff.status} [${result.handoff.normalizedVerdict}]\n`;
   }
   if (subcommand === "fleet") {
     const verdict = result.summary.byVerdict;
     const lines = [`loopy fleet: ${result.summary.dispatched} dispatched (accept ${verdict.accept}, reject ${verdict.reject}, needs-context ${verdict["needs-context"]}, pending ${verdict.pending})`];
+    for (const item of result.handoffs ?? []) {
+      if (item.crewLine) lines.push(`- ${formatCrewLine(item.crewLine)}`);
+    }
     for (const item of result.outstanding) lines.push(`- outstanding ${item.id} ${item.agent}: ${item.assignment}`);
+    for (const item of result.attention ?? []) lines.push(`- attention ${item.id} ${item.agent}: ${item.normalizedVerdict} ${item.assignment}`);
     if (result.warning) lines.push(result.warning);
     return `${lines.join("\n")}\n`;
   }

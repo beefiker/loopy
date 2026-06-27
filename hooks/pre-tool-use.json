@@ -2,7 +2,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "^create_goal$",
+        "matcher": "^(create_goal|update_goal)$",
         "hooks": [
           {
             "type": "command",

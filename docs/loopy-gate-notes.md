@@ -45,10 +45,18 @@ Loopy keeps strict completion evidence while using Loopy-native names in code, d
 - not-applicable adversarial case rejection
 - one-time SessionStart bootstrap for the command wrapper and bundled agents
 - quiet default plugin continuation hook registration
+- packaged Stop hook that remains runtime opt-in through `LOOPY_STOP_HOOK=on`
+- premature native `update_goal status=complete` rejection while Loopy aggregate completion is incomplete
+- accepted fleet handoffs requiring active-root evidence artifacts
+- crew completion lines staying presentation-only beside handoff and fleet status
+- model policy defaults checked by doctor
+- commandless manual proof and exhausted-attempt warnings in trace, check, and report
 
 Evidence trace: Loopy's `trace` view shows artifact-backed proof, missing proof, suggested artifact paths, summary counts, and timestamped ledger events.
 
 Evidence report: Loopy writes a portable report artifact with an Evidence Summary section, recorded evidence, artifact capture times, a timestamped timeline, next action, and proof plan.
+
+Evidence warnings: Loopy surfaces commandless manual proof and exhausted worker/auditor attempts as warnings. They do not replace the strict proof floor; they point the parent toward stronger command-backed evidence or a smaller respawned lane.
 
 Flow checklist guide: Loopy's guide and hooks show start or resume, record artifact-backed proof, check evidence, and finish with quality gate.
 

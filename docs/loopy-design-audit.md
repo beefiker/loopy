@@ -11,6 +11,8 @@ This doctor-verified audit records Loopy's own design decisions. It exists to ke
 | `native-naming` | Public code, docs, and tests should describe Loopy behavior directly. | Modules, tests, docs, CLI flags, and metadata use Loopy-native terms. | Native vocabulary doctor check and docs tests. |
 | `install-reference` | The README should name the GitHub marketplace bootstrap pattern it intentionally follows. | One README line may cite the external GitHub install reference; runtime code and command names stay Loopy-native. | Native vocabulary doctor allow-list and `test/docs.test.js`. |
 | `recorded-thresholds` | Later analysis should compare against earlier judgments. | `docs/loopy-loop-golden-set.md` stores score history and command evidence in one tracked place. | `docs/loopy-loop-golden-set.md` and `test/docs.test.js`. |
+| `model-policy` | Crew lanes need explicit cost/depth defaults without treating model choice as correctness. | Bundled agent TOML files carry advisory model, effort, and tier defaults, with Nami optimized for navigation and review/gate lanes using deeper effort. | `docs/loopy-model-policy.md`, `src/model-policy.js`, and `test/doctor.test.js`. |
+| `crew-lines` | Crew handoffs should feel alive without weakening evidence discipline. | Known crew lanes can emit original terminal-state lines in presentation output only; persisted state and gate authority stay mechanical. | `docs/loopy-crew-lines.md`, `src/crew-lines.js`, `test/crew-lines.test.js`, and `test/fleet.test.js`. |
 
 ## Compatibility Boundary
 

@@ -9,6 +9,8 @@ import { applySteering, statusLoop } from "./loop.js";
 import { appendLedger, evidenceRelativeDir, goalsPath, scopeFromSessionId } from "./store.js";
 import { MAX_SUBAGENT_ATTEMPTS, clearAttemptState, nextAttemptState, recordSubagentLedger } from "./subagent-attempts.js";
 
+export { runPreToolUseHook } from "./pre-tool-use.js";
+
 const EVIDENCE_RECEIPT_AGENT_TYPES = new Set(["franky", "zoro", "usopp", "jinbe"]);
 // An artifact up to this size must carry non-whitespace content to satisfy the receipt gate;
 // only larger artifacts (assumed non-trivial) skip the read. Closes the blank-placeholder hole.
@@ -18,8 +20,6 @@ const CONTEXT_PRESSURE_MARKERS = [
   "context_too_large", "codex ran out of room in the model's context window",
   "your input exceeds the context window", "long threads and multiple compactions"
 ];
-const CREATE_GOAL_PAYLOAD_WARNING =
-  "Use create_goal with objective only. Omit token_budget so the goal stays unlimited, and put lifecycle status changes on update_goal.";
 const LOOSE_TRIGGER_PATTERN = /(^|[^A-Za-z0-9_-])(\$?(?:loopywork|lpy))(?=$|[^A-Za-z0-9_-])/iu;
 const LOOSE_TRIGGER_GLOBAL_PATTERN = /(^|[^A-Za-z0-9_-])(\$?(?:loopywork|lpy))(?=$|[^A-Za-z0-9_-])/giu;
 const PROTECTED_STEERING_KEYS = new Set([
@@ -29,21 +29,6 @@ const PROTECTED_STEERING_KEYS = new Set([
   "completedAt",
   "completionStatus"
 ]);
-
-export function runPreToolUseHook(payload) {
-  if (!isRecord(payload)) return "";
-  if (payload.hook_event_name !== "PreToolUse") return "";
-  if (payload.tool_name !== "create_goal") return "";
-  if (!hasInvalidCreateGoalInput(payload.tool_input)) return "";
-  return `${JSON.stringify({
-    hookSpecificOutput: {
-      hookEventName: "PreToolUse",
-      permissionDecision: "deny",
-      permissionDecisionReason: CREATE_GOAL_PAYLOAD_WARNING,
-      additionalContext: CREATE_GOAL_PAYLOAD_WARNING
-    }
-  })}\n`;
-}
 
 export function runSubagentStopHook(payload) {
   if (!isRecord(payload)) return "";
@@ -226,9 +211,6 @@ function readNonEmptyString(value) {
   return trimmed.length === 0 ? null : trimmed;
 }
 
-function hasInvalidCreateGoalInput(value) {
-  return isRecord(value) && Object.keys(value).some((key) => key !== "objective");
-}
 function extractReceipt(message) {
   if (typeof message !== "string") return null;
   const match = /(?:EVIDENCE_RECORDED|LOOPY_EVIDENCE):\s*(\S+)/u.exec(message);

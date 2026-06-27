@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("plugin manifest exposes Loopy skills and quiet default hooks", async () => {
+test("plugin manifest exposes Loopy skills and packaged opt-in hooks", async () => {
   const plugin = JSON.parse(await readFile(".codex-plugin/plugin.json", "utf8"));
 
   assert.equal(plugin.skills, "./skills/");
@@ -10,7 +10,7 @@ test("plugin manifest exposes Loopy skills and quiet default hooks", async () =>
   assert(plugin.hooks.includes("./hooks/user-prompt-submit.json"));
   assert(plugin.hooks.includes("./hooks/pre-tool-use.json"));
   assert(plugin.interface.defaultPrompt.some((line) => /bootstraps the CLI wrapper/.test(line)));
-  assert.equal(plugin.hooks.includes("./hooks/stop.json"), false);
+  assert.equal(plugin.hooks.includes("./hooks/stop.json"), true);
 });
 
 test("subagent receipt hook covers Loopy evidence-reporting agents", async () => {

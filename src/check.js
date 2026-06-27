@@ -24,13 +24,17 @@ export async function checkLoop(cwd, argv = []) {
     repairCommands,
     repairPlan,
     trace,
+    warnings: trace.warnings,
     guide: buildGuide(plan, { cwd, scope })
   };
 }
 
 export function formatCheckResult(result) {
-  if (result.ok) return `loopy check: ok\n${evidenceSummaryLine(result)}\n${formatGuide(result)}`;
+  if (result.ok) {
+    return `loopy check: ok\n${evidenceSummaryLine(result)}\n${formatWarnings(result.warnings)}${formatGuide(result)}`;
+  }
   const lines = ["loopy check: blocked", evidenceSummaryLine(result)];
+  lines.push(...warningLines(result.warnings));
   if (result.unresolvedCriteria.length > 0) {
     lines.push("", "Unresolved criteria:", ...result.unresolvedCriteria.map((item) => `- ${item.ref} ${item.status} -> \`${item.suggestedArtifact}\` ${item.scenario}`));
   }
@@ -52,6 +56,16 @@ function evidenceSummaryLine(result) {
 
 function formatGuide(result) {
   return result.guide === undefined ? "" : formatGuideResult(result);
+}
+
+function formatWarnings(warnings) {
+  const lines = warningLines(warnings);
+  return lines.length === 0 ? "" : `${lines.join("\n")}\n`;
+}
+
+function warningLines(warnings) {
+  if (!Array.isArray(warnings) || warnings.length === 0) return [];
+  return ["", "Warnings:", ...warnings.map((item) => `- ${item.kind}: ${item.message}`)];
 }
 
 function validateArtifact(cwd, item, scope) {

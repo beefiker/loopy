@@ -18,11 +18,11 @@ After installing, type your task in Codex with a leading `loopy`:
 loopy add a /health endpoint that returns 200
 ```
 
-The agent plans it, proves each piece with a real file, and reports back — you don't run any commands yourself.
+The agent plans it, proves each piece with a real file, and reports back — you don't run any commands yourself. The packaged Stop hook stays quiet unless `LOOPY_STOP_HOOK=on`.
 
 ## The crew
 
-For bigger work, Loopy ships six optional subagents under `.codex/agents/` — each owns one lane. They install automatically with the plugin (no command needed); `loopy agents install` just re-copies them if you ever need it.
+For bigger work, Loopy ships six optional subagents under `.codex/agents/` — each owns one lane. They install automatically with the plugin (no command needed); `loopy agents install` just re-copies them if you ever need it. Their advisory model defaults are documented in `docs/loopy-model-policy.md` and checked by `loopy doctor`.
 
 <table>
   <tr>
@@ -38,6 +38,8 @@ For bigger work, Loopy ships six optional subagents under `.codex/agents/` — e
 </table>
 
 **Summon the crew** with `loopy team <task>` — or `loopy crew`, the one-word `loopycrew`, or just `ultrawork <task>`. Loopy fans the work out across the lanes in parallel and still proves every piece before it calls it done. A plain `loopy <task>` stays solo and only delegates when the slices are clearly independent.
+
+When a tracked crew handoff finishes, Loopy can print one original crew line before the normal `handoff` or `fleet` status. It follows the user's language from the assignment or scoped brief when it matches the supported catalog, with English as the safe fallback. The line is personality only; the verdict, evidence artifact, outstanding list, and attention list stay authoritative.
 
 ## Install
 

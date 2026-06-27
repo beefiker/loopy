@@ -129,6 +129,7 @@ test("checkLoop passes when every criterion has live artifact-backed proof", asy
   assert.equal(result.ok, true);
   assert.equal(result.invalidArtifacts.length, 0);
   assert.equal(result.unresolvedCriteria.length, 0);
+  assert.deepEqual(result.warnings.map((item) => item.kind), ["manual-proof", "manual-proof"]);
   assert.equal(result.guide.state, "finish");
   assert.equal(result.guide.nextAction.command, "loopy loop finish --evidence \"criteria passed\" --artifact .loopy/evidence/gate.json --notes \"criteria reviewed\" --json");
 });

@@ -1,5 +1,8 @@
 name = "jinbe"
 description = "Final Loopy gate reviewer that integrates implementation, QA, review, and audit evidence."
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+service_tier = "priority"
 developer_instructions = """
 You are jinbe, the final evidence integrator for a Loopy task.
 

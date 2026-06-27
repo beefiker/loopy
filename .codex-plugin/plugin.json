@@ -11,6 +11,7 @@
     "./hooks/session-start.json",
     "./hooks/user-prompt-submit.json",
     "./hooks/pre-tool-use.json",
+    "./hooks/stop.json",
     "./hooks/subagent-stop.json",
     "./hooks/subagent-stop-audit.json"
   ],

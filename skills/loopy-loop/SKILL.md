@@ -30,7 +30,7 @@ When the user opens a message with `loopy <task>`, act as the loop engineer:
 - Start once with `loopy loop begin --brief "<task>" --mode light --json`; do not create a second plan if one is active.
 - Drive each step from `loopy loop guide --json`, prove criteria with `loopy loop prove -- <command>`, preflight with `loopy loop check`, then finish with `loopy loop finish --evidence "<summary>" --json`.
 - The user types only `loopy <task>`. You run every Loopy command and report progress as criteria proven and the next step.
-- `loopy` with no task asks what to build; `loopy` mid-loop resumes from existing state. When the optional Stop hook is enabled with `LOOPY_STOP_HOOK=on`, it blocks completion until evidence exists.
+- `loopy` with no task asks what to build; `loopy` mid-loop resumes from existing state. The Stop hook is packaged with the plugin but stays inert until `LOOPY_STOP_HOOK=on`; when enabled, it blocks completion until evidence exists.
 
 ### Two tiers: solo and crew (`loopy team`)
 
@@ -39,7 +39,7 @@ The loop engineer directive is injected for every `loopy` prompt, and it scales 
 - **Solo (default).** A plain `loopy <task>` drives one agent through the loop. The directive still permits light delegation: if the work splits into 2+ genuinely independent slices, you may fan them out in parallel with the host's native `multi_agent_v1.spawn_agent` (self-contained `message`, `fork_context: false`); for a single cohesive change, stay solo.
 - **Crew (`loopy team <task>` / `loopy crew <task>`, the connected one-word `loopycrew <task>`, or the standalone `ultrawork <task>`).** The same engineer escalates into full fan-out: dispatch the crew across independent lanes, collect them with `multi_agent_v1.wait_agent`, and record only artifact-backed proof. The escalation keyword is stripped from the brief that seeds the loop. This is the active counterpart to "Optional Subagent-Driven Mode" below — same dispatch contract, receipt gate, and `handoff`/`fleet` tracking.
 
-Each crew dispatch sets `agent_type` to the role so the child loads that role's TOML (model + instructions): `agent_type: "franky"` to build, `"zoro"` to review, `"usopp"` to test, `"jinbe"` to gate, `"robin"` to audit, `"nami"` to navigate. Because role routing by name is best-effort across hosts, the `message` also stays self-contained (`TASK: act as <role> …`) so the worker behaves correctly even if the host ignores `agent_type`.
+Each crew dispatch sets `agent_type` to the role so the host can load that role's TOML instructions and advisory model policy: `agent_type: "franky"` to build, `"zoro"` to review, `"usopp"` to test, `"jinbe"` to gate, `"robin"` to audit, `"nami"` to navigate. Because role routing and model defaults are best-effort across hosts, the `message` also stays self-contained (`TASK: act as <role> ...`) so the worker behaves correctly even if the host ignores `agent_type`.
 
 Both tiers are steering, not enforcement: the directive instructs the main agent, and actual spawning depends on the host's native multi-agent tool being available. Loopy never spawns; it gates the evidence workers deliver. See "Optional Subagent-Driven Mode" for the full dispatch contract and crew roles.
 
@@ -87,7 +87,7 @@ Parent agent responsibilities:
 - Avoid parallel executors on overlapping files. Parallelize read-heavy review, QA, and summarization lanes first.
 - Wait for worker summaries, then record only artifact-backed proof with `loopy loop prove`, `loopy loop evidence`, `loopy loop review`, or `loopy loop checkpoint`.
 - Summarize worker output by status, claim, changed files, commands, artifacts, risks, and next action. Do not paste raw transcripts into the main thread unless they are the evidence.
-- Optionally track the fleet: record each dispatch with `loopy loop handoff --agent <name> --assignment <text> [--verdict <v>]` and reconcile with `loopy loop fleet --json`, which normalizes the workers' APPROVE/PASS/REJECT-style verdicts into one accept/reject/needs-context enum and lists outstanding workers. A lifecycle verdict (`working`/`in_progress`/`running`) stays outstanding; an unresolved verdict (`inconclusive`/`timeout`/`ack_only`) normalizes to needs-context and is NEVER counted as accept. Set `LOOPY_MAX_PARALLEL` for a soft over-dispatch warning. Handoffs are parent-side bookkeeping only — they never spawn or complete.
+- Optionally track the fleet: record each dispatch with `loopy loop handoff --agent <name> --assignment <text> [--verdict <v>] [--artifact <path>]` and reconcile with `loopy loop fleet --json`, which normalizes the workers' APPROVE/PASS/REJECT-style verdicts into one accept/reject/needs-context enum and lists outstanding workers. An accepted verdict requires a valid artifact under the active evidence root. A lifecycle verdict (`working`/`in_progress`/`running`) stays outstanding; an unresolved verdict (`inconclusive`/`timeout`/`ack_only`) normalizes to needs-context and is NEVER counted as accept. Rejected and needs-context lanes appear in `attention`. Known crew lanes may print one original completion line for terminal verdicts, choosing the user's language from the assignment or scoped brief when it matches the supported catalog (`en`, `ko`, `ja`, `zh`, `es`, `fr`, `de`, `it`, `pt`, `id`, `hi`, `tr`, `vi`, `ru`, `ar`, `th`), but the line is presentation only; artifacts, normalized verdicts, `attention`, and `outstanding` remain authoritative. Use `--language <tag>` or `LOOPY_CREW_LANGUAGE=<tag>` only when the prompt language cannot be inferred. Set `LOOPY_MAX_PARALLEL` for a soft over-dispatch warning. Handoffs are parent-side bookkeeping only — they never spawn or complete.
 
 ### Dispatch contract (self-contained)
 
@@ -167,6 +167,8 @@ loopy loop check
 
 `check` prints an evidence summary with artifact-backed criteria, unresolved, and invalid counts. If it is blocked, use the numbered repair plan: each step names the target artifact, capture command, and manual evidence alternative.
 
+`trace`, `check`, and `report` also surface warnings for commandless manual proof and exhausted worker/auditor attempts. Warnings do not fail a preflight by themselves, but they are a prompt to prefer command-backed proof or close an inconclusive lane.
+
 Finish in one command after all criteria pass:
 
 ```sh
@@ -201,6 +203,6 @@ After any accepted steering, follow the returned guide; run `loopy loop status -
 
 ## Doctor
 
-`loopy doctor --json` checks the package, hooks, skill, CLI, dependency-free boundary, runtime ignore policy, file inventory, gate notes, design audit, native vocabulary, generic comparison scan status, and reviewability.
+`loopy doctor --json` checks the package, hooks, skill, CLI, dependency-free boundary, runtime ignore policy, file inventory, gate notes, design audit, native vocabulary, generic comparison scan status, dispatch coherence, model policy, and reviewability.
 
 Use `loopy doctor --comparison-path /path/to/comparison --json` only when you need copied-block evidence against an external folder. The generic comparison scan compares code-shaped files for substantial contiguous blocks without naming or coupling Loopy to any source project.

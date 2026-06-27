@@ -162,6 +162,32 @@ test("golden: PreToolUse create_goal guard tells Codex to use update_goal for li
   assert.match(parsed.hookSpecificOutput.additionalContext, /update_goal/);
 });
 
+test("golden: PreToolUse update_goal completion guard refuses premature native completion", async () => {
+  const repo = await tempRepo();
+  await createLoop(repo, ["--brief", "Ship"]);
+
+  const result = runCli(["hook", "pre-tool-use"], {
+    input: `${JSON.stringify({
+      hook_event_name: "PreToolUse",
+      session_id: "sess.1",
+      turn_id: "turn.1",
+      transcript_path: null,
+      cwd: repo,
+      model: "gpt-5",
+      permission_mode: "default",
+      tool_name: "update_goal",
+      tool_use_id: "tool.2",
+      tool_input: { status: "complete" }
+    })}\n`
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const parsed = JSON.parse(result.stdout);
+  assert.equal(parsed.hookSpecificOutput.permissionDecision, "deny");
+  assert.match(parsed.hookSpecificOutput.additionalContext, /Loopy plan is not complete/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /loopy loop finish/);
+});
+
 test("golden: UserPromptSubmit injects Loopy context when a Loopy trigger asks for it", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
@@ -354,11 +380,11 @@ test("golden: SubagentStop attempt state blocks three claims then clears", async
   );
 });
 
-test("golden: plugin manifest keeps chatty prompt hooks opt-in by default", async () => {
+test("golden: plugin manifest packages Stop while runtime stays opt-in", async () => {
   const manifest = JSON.parse(await readFile(join(process.cwd(), ".codex-plugin", "plugin.json"), "utf8"));
 
   assert.ok(manifest.hooks.includes("./hooks/session-start.json"));
   assert.ok(manifest.hooks.includes("./hooks/user-prompt-submit.json"));
   assert.ok(manifest.hooks.includes("./hooks/pre-tool-use.json"));
-  assert.equal(manifest.hooks.includes("./hooks/stop.json"), false);
+  assert.equal(manifest.hooks.includes("./hooks/stop.json"), true);
 });

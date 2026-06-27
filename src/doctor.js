@@ -6,6 +6,7 @@ import { checkDesignAudit } from "./design-audit.js";
 import { checkFileAudit } from "./file-audit.js";
 import { checkComparisonSimilarity } from "./comparison-similarity.js";
 import { LOOPY_AGENT_NAMES } from "./agents.js";
+import { checkModelPolicy } from "./model-policy.js";
 
 const FILE_AUDIT_PATH = "docs/loopy-file-audit.md";
 const GATE_NOTES_PATH = "docs/loopy-gate-notes.md";
@@ -71,8 +72,9 @@ export async function runDoctor(cwd, options = {}) {
   const nativeVocabulary = await checkNativeVocabulary(cwd);
   const reviewability = await checkReviewability(cwd);
   const dispatchCoherence = await checkDispatchCoherence(cwd);
+  const modelPolicy = await checkModelPolicy(cwd);
   const hostContract = checkHostContract();
-  const checks = { pluginManifest, hooks, skills, cli, dependencies, runtimeBoundary, fileAudit, gateNotes, designAudit, comparisonSimilarity, nativeVocabulary, reviewability, dispatchCoherence, hostContract };
+  const checks = { pluginManifest, hooks, skills, cli, dependencies, runtimeBoundary, fileAudit, gateNotes, designAudit, comparisonSimilarity, nativeVocabulary, reviewability, dispatchCoherence, modelPolicy, hostContract };
   return {
     ok: Object.values(checks).every((check) => check.ok),
     checks

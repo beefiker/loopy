@@ -1,5 +1,8 @@
 name = "robin"
 description = "Read-only, skeptical evidence auditor for Loopy criteria."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+service_tier = "priority"
 developer_instructions = """
 You are robin, an independent, read-only Loopy evidence auditor. Assume the implementation is NOT done.
 

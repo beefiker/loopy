@@ -1,5 +1,8 @@
 name = "zoro"
 description = "Independent code reviewer for Loopy subagent-driven development."
+model = "gpt-5.5"
+model_reasoning_effort = "xhigh"
+service_tier = "priority"
 developer_instructions = """
 You are zoro, an independent reviewer for a bounded Loopy change.
 

@@ -8,7 +8,9 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { readFlag } from "./args.js";
-import { ensureLoopyDirs, loopyRelativeDir, nowIso, scopeFromSessionId, withFileLock, writeJsonAtomic } from "./store.js";
+import { resolveEvidenceArtifact } from "./artifacts.js";
+import { decorateHandoffWithCrewLine } from "./crew-lines.js";
+import { briefPath, ensureLoopyDirs, loopyRelativeDir, nowIso, scopeFromSessionId, withFileLock, writeJsonAtomic } from "./store.js";
 
 // Map each worker vocabulary onto one accept/reject/needs-context/pending enum so the parent
 // integrates worker output mechanically instead of by hand. Lifecycle verdicts are deliberate:
@@ -45,6 +47,7 @@ async function readHandoffs(cwd, scope) {
 
 export async function handoffLoop(cwd, argv) {
   const scope = scopeFromSessionId(readFlag(argv, "--session-id"));
+  const language = readFlag(argv, "--language") ?? process.env.LOOPY_CREW_LANGUAGE;
   const id = readFlag(argv, "--id");
   // Distinguish "flag absent" (undefined) from a supplied value so an --id update MERGES only
   // the supplied fields instead of wiping the rest to null.
@@ -62,14 +65,15 @@ export async function handoffLoop(cwd, argv) {
     if (entry === undefined) {
       if (!agent) throw new Error("Missing --agent.");
       if (!assignment) throw new Error("Missing --assignment.");
+      const normalizedVerdict = normalizeVerdict(verdict ?? null);
       entry = {
         id: `H${String(state.handoffs.length + 1).padStart(3, "0")}`,
         agent,
         assignment,
         status: status ?? "dispatched",
         verdict: verdict ?? null,
-        normalizedVerdict: normalizeVerdict(verdict ?? null),
-        artifact: artifact ?? null,
+        normalizedVerdict,
+        artifact: normalizeAcceptedArtifact(cwd, scope, normalizedVerdict, artifact),
         recordedAt: now,
         updatedAt: now
       };
@@ -80,22 +84,31 @@ export async function handoffLoop(cwd, argv) {
       if (agent) entry.agent = agent;
       if (assignment) entry.assignment = assignment;
       if (status !== undefined) entry.status = status;
+      const nextNormalizedVerdict = verdict !== undefined ? normalizeVerdict(verdict) : entry.normalizedVerdict;
+      const nextArtifact = artifact !== undefined ? artifact : entry.artifact;
       if (verdict !== undefined) {
         entry.verdict = verdict;
-        entry.normalizedVerdict = normalizeVerdict(verdict);
+        entry.normalizedVerdict = nextNormalizedVerdict;
       }
-      if (artifact !== undefined) entry.artifact = artifact;
+      if (artifact !== undefined || nextNormalizedVerdict === "accept") {
+        entry.artifact = normalizeAcceptedArtifact(cwd, scope, nextNormalizedVerdict, nextArtifact);
+      }
       entry.updatedAt = now;
     }
     await writeJsonAtomic(handoffsPath(cwd, scope), state);
     return entry;
   });
-  return { ok: true, kind: "handoff_recorded", handoff };
+  const languageHints = await readCrewLineLanguageHints(cwd, scope);
+  const decoratedHandoff = decorateHandoffWithCrewLine(handoff, { language, languageHints });
+  return { ok: true, kind: "handoff_recorded", handoff: decoratedHandoff, crewLine: decoratedHandoff.crewLine ?? null };
 }
 
 export async function fleetLoop(cwd, argv) {
   const scope = scopeFromSessionId(readFlag(argv, "--session-id"));
+  const language = readFlag(argv, "--language") ?? process.env.LOOPY_CREW_LANGUAGE;
   const state = await readHandoffs(cwd, scope);
+  const languageHints = await readCrewLineLanguageHints(cwd, scope);
+  const handoffs = state.handoffs.map((handoff) => decorateHandoffWithCrewLine(handoff, { language, languageHints }));
   const byVerdict = { accept: 0, reject: 0, "needs-context": 0, pending: 0 };
   for (const handoff of state.handoffs) {
     // Guard against an out-of-enum verdict (only possible via a hand-edited file): count it as
@@ -103,13 +116,44 @@ export async function fleetLoop(cwd, argv) {
     const key = Object.prototype.hasOwnProperty.call(byVerdict, handoff.normalizedVerdict) ? handoff.normalizedVerdict : "pending";
     byVerdict[key] += 1;
   }
-  const outstanding = state.handoffs
+  const outstanding = handoffs
     .filter((handoff) => (handoff.normalizedVerdict ?? "pending") === "pending")
     .map((handoff) => ({ id: handoff.id, agent: handoff.agent, assignment: handoff.assignment }));
-  const result = { ok: true, kind: "fleet", summary: { dispatched: state.handoffs.length, byVerdict }, outstanding, handoffs: state.handoffs };
+  const attention = handoffs
+    .filter((handoff) => ["reject", "needs-context"].includes(handoff.normalizedVerdict ?? "pending"))
+    .map((handoff) => ({
+      id: handoff.id,
+      agent: handoff.agent,
+      assignment: handoff.assignment,
+      verdict: handoff.verdict,
+      normalizedVerdict: handoff.normalizedVerdict,
+      crewLine: handoff.crewLine ?? null
+    }));
+  const result = { ok: true, kind: "fleet", summary: { dispatched: state.handoffs.length, byVerdict }, outstanding, attention, handoffs };
   const cap = Number.parseInt(process.env.LOOPY_MAX_PARALLEL ?? "", 10);
   if (Number.isInteger(cap) && cap > 0 && outstanding.length > cap) {
     result.warning = `${outstanding.length} outstanding handoffs exceed LOOPY_MAX_PARALLEL=${cap}; collect some before dispatching more.`;
   }
   return result;
+}
+
+async function readCrewLineLanguageHints(cwd, scope) {
+  try {
+    return [await readFile(briefPath(cwd, scope), "utf8")];
+  } catch {
+    return [];
+  }
+}
+
+function normalizeAcceptedArtifact(cwd, scope, normalizedVerdict, artifact) {
+  if (normalizedVerdict !== "accept") return artifact ?? null;
+  if (typeof artifact !== "string" || artifact.trim().length === 0) {
+    throw new Error("Accepted handoffs require a non-empty --artifact under the active evidence root.");
+  }
+  try {
+    return resolveEvidenceArtifact(cwd, artifact, scope).relativePath;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(`Accepted handoffs require a valid evidence artifact: ${detail}`);
+  }
 }

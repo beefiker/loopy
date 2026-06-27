@@ -11,6 +11,7 @@ export async function traceLoop(cwd, argv = []) {
   const artifacts = collectArtifacts(plan);
   const missingCriteria = collectMissingCriteria(plan, plan.evidencePath ?? evidenceRelativeDir(scope));
   const timeline = ledger.map(timelineEntry);
+  const warnings = collectWarnings(plan, timeline);
   return {
     ok: true,
     kind: "trace",
@@ -23,6 +24,7 @@ export async function traceLoop(cwd, argv = []) {
     artifacts,
     missingCriteria,
     timeline,
+    warnings,
     guide: buildGuide(plan, { cwd, scope })
   };
 }
@@ -40,6 +42,9 @@ export function formatTraceResult(result) {
     "",
     "Missing proof:",
     ...renderMissingCriteria(result.missingCriteria),
+    "",
+    "Warnings:",
+    ...renderWarnings(result.warnings),
     "",
     "Timeline:",
     ...renderTimeline(result.timeline)
@@ -90,6 +95,7 @@ function criterionTrace(goal, criterion) {
     capturedAt: criterion.capturedAt ?? null
   };
   if (criterion.notes !== undefined) item.notes = criterion.notes;
+  if (Array.isArray(criterion.command)) item.command = criterion.command;
   return item;
 }
 
@@ -102,8 +108,42 @@ function timelineEntry(entry, index) {
     status: entry.status ?? null,
     artifact: entry.artifact ?? null,
     evidence: entry.evidence ?? null,
-    notes: entry.notes ?? null
+    notes: entry.notes ?? null,
+    agentType: entry.agentType ?? null,
+    agentId: entry.agentId ?? null,
+    attempts: Number.isInteger(entry.attempts) ? entry.attempts : null
   };
+}
+
+function collectWarnings(plan, timeline) {
+  return [
+    ...manualProofWarnings(plan),
+    ...attemptExhaustionWarnings(timeline)
+  ];
+}
+
+function manualProofWarnings(plan) {
+  return plan.goals.flatMap((goal) =>
+    goal.criteria
+      .filter((criterion) => criterion.status === "pass" && criterion.artifact && !Array.isArray(criterion.command))
+      .map((criterion) => ({
+        kind: "manual-proof",
+        ref: `${goal.id}/${criterion.id}`,
+        artifact: criterion.artifact,
+        message: `${goal.id}/${criterion.id} is passed with artifact-only proof; prefer command-backed proof when feasible.`
+      }))
+  );
+}
+
+function attemptExhaustionWarnings(timeline) {
+  return timeline
+    .filter((entry) => entry.kind === "subagent_attempt_exhausted" || entry.kind === "audit_attempt_exhausted")
+    .map((entry) => ({
+      kind: entry.kind,
+      ref: entry.ref,
+      artifact: entry.artifact,
+      message: `${entry.kind} for ${entry.agentType ?? "unknown-agent"}${entry.attempts === null ? "" : ` after ${entry.attempts} attempts`}.`
+    }));
 }
 
 function renderArtifacts(artifacts) {
@@ -118,6 +158,11 @@ function renderArtifacts(artifacts) {
 function renderMissingCriteria(criteria) {
   if (criteria.length === 0) return ["- none"];
   return criteria.map((item) => `- ${item.ref} ${item.status} -> \`${item.suggestedArtifact}\` ${item.scenario}`);
+}
+
+function renderWarnings(warnings) {
+  if (!Array.isArray(warnings) || warnings.length === 0) return ["- none"];
+  return warnings.map((item) => `- ${item.kind}: ${item.message}`);
 }
 
 function renderTimeline(timeline) {

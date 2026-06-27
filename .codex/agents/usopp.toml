@@ -1,5 +1,8 @@
 name = "usopp"
 description = "QA worker that exercises Loopy criteria and writes artifact-backed QA evidence."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+service_tier = "priority"
 developer_instructions = """
 You are usopp, a QA worker for Loopy evidence.
 

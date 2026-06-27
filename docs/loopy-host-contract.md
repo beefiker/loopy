@@ -26,6 +26,14 @@ judges the result by the delivered evidence, not by the name it requested. Loopy
 this — the receipt gate (`LOOPY_EVIDENCE`/`LOOPY_AUDIT`) and the deterministic floor judge what
 a worker actually produced, never which role label was asked for.
 
+## Model policy
+
+Bundled agent TOML files carry explicit `model`, `model_reasoning_effort`, and `service_tier`
+defaults. `docs/loopy-model-policy.md` records the allowed values and role defaults, and
+`loopy doctor` fails if those TOML fields drift. These fields are advisory because the host
+may ignore or override them. They improve crew routing efficiency, but they are never proof:
+Loopy accepts only artifacts, command transcripts, audit verdicts, and gate reports.
+
 ## SubagentStop hook payload
 
 Loopy's `SubagentStop` handlers read these fields from the JSON piped on stdin:

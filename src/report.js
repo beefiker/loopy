@@ -39,6 +39,9 @@ export function renderEvidenceReport(trace) {
     "## Evidence Summary",
     ...renderEvidenceSummary(trace.evidenceSummary),
     "",
+    "## Evidence Warnings",
+    ...renderWarnings(trace.warnings),
+    "",
     "## Next Action",
     ...renderNextAction(trace.guide),
     "",
@@ -58,6 +61,11 @@ export function renderEvidenceReport(trace) {
     ...renderTimeline(trace.timeline),
     ""
   ].join("\n");
+}
+
+function renderWarnings(warnings) {
+  if (!Array.isArray(warnings) || warnings.length === 0) return ["- none"];
+  return warnings.map((item) => `- ${item.kind}: ${item.message}`);
 }
 
 function renderEvidenceSummary(summary) {

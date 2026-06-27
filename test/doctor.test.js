@@ -87,8 +87,25 @@ test("doctor --json reports Loopy-native packaging, audit, vocabulary, and revie
   assert.equal(parsed.checks.reviewability.oversized.length, 0);
   assert.equal(parsed.checks.dispatchCoherence.ok, true);
   assert.ok(parsed.checks.dispatchCoherence.dispatched.includes("robin"));
+  assert.equal(parsed.checks.modelPolicy.ok, true);
+  assert.equal(parsed.checks.modelPolicy.policyPath, "docs/loopy-model-policy.md");
+  assert.equal(parsed.checks.modelPolicy.agents.nami.model, "gpt-5.4-mini");
+  assert.equal(parsed.checks.modelPolicy.agents.zoro.model_reasoning_effort, "xhigh");
   assert.equal(parsed.checks.hostContract.ok, true);
   assert.ok(parsed.checks.hostContract.cannotVerify.length >= 3);
+});
+
+test("doctor model policy fails when bundled agent defaults drift", async () => {
+  const repo = await tempRepoCopy();
+  const agentPath = join(repo, ".codex", "agents", "nami.toml");
+  const agent = await readFile(agentPath, "utf8");
+  await writeFile(agentPath, agent.replace('model = "gpt-5.4-mini"', 'model = "gpt-5.5"'), "utf8");
+
+  const result = await runDoctor(repo);
+
+  assert.equal(result.ok, false);
+  assert.equal(result.checks.modelPolicy.ok, false);
+  assert.match(result.checks.modelPolicy.message, /nami\.toml model/);
 });
 
 test("doctor dispatch coherence fails when a dispatched agent is not installed", async () => {
