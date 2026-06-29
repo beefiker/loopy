@@ -76,4 +76,51 @@ codex plugin add superloopy@beefiker
 
 如果从 checkout 安装，请运行 `node src/cli.js install --json`。
 
+## 更新
+
+如果通过 Codex marketplace 安装，刷新 marketplace snapshot：
+
+```
+codex plugin marketplace upgrade beefiker
+```
+
+升级后重启 Codex。如果 hooks 显示为 Modified，这是正常的；重新批准后，下一次已批准的会话会用新版本重新运行 `SessionStart` bootstrap。然后运行 `superloopy doctor`。
+
+如果插件仍然像旧版本，或仍显示 degraded，请从已刷新 marketplace 做一次 repair reinstall：
+
+```
+codex plugin add superloopy@beefiker
+```
+
+如果从 checkout 安装，请更新 checkout 并重新运行 installer：
+
+```
+git pull --ff-only
+node src/cli.js install --json
+superloopy doctor
+```
+
+## 卸载
+
+从 Codex 删除已安装插件：
+
+```
+codex plugin remove superloopy@beefiker
+```
+
+如果不再需要这个 marketplace source，也可以删除：
+
+```
+codex plugin marketplace remove beefiker
+```
+
+卸载后重启 Codex。可选的 local bootstrap cleanup：plugin 删除会移除 Codex 的 plugin config 和 cache，但 `superloopy` wrapper 以及复制到个人目录的 agents 可能会保留。删除前请先检查，尤其是你修改过 agent 文件时。
+
+```
+rm -f ~/.local/bin/superloopy
+rm -f ~/.codex/agents/franky.toml ~/.codex/agents/zoro.toml ~/.codex/agents/usopp.toml ~/.codex/agents/jinbe.toml ~/.codex/agents/robin.toml ~/.codex/agents/nami.toml
+```
+
+如果安装时使用了 `CODEX_HOME`、`SUPERLOOPY_BIN_DIR` 或 `CODEX_LOCAL_BIN_DIR`，请清理对应路径。
+
 <sub>MIT 许可证。</sub>

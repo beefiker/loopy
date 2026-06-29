@@ -76,4 +76,51 @@ codex plugin add superloopy@beefiker
 
 checkout からインストールする場合は `node src/cli.js install --json` を実行してください。
 
+## 更新
+
+Codex marketplace からインストールした場合は、marketplace snapshot を更新します。
+
+```
+codex plugin marketplace upgrade beefiker
+```
+
+更新後に Codex を再起動します。hooks が Modified と表示される場合がありますが正常です。再承認すると、次の承認済みセッションで新しいバージョンの `SessionStart` bootstrap が再実行されます。その後 `superloopy doctor` を実行してください。
+
+それでもプラグインが古いままに見える、または degraded が残る場合は、更新済み marketplace から repair reinstall を実行してください。
+
+```
+codex plugin add superloopy@beefiker
+```
+
+checkout からインストールした場合は、checkout を更新して installer を再実行します。
+
+```
+git pull --ff-only
+node src/cli.js install --json
+superloopy doctor
+```
+
+## アンインストール
+
+Codex からインストール済みプラグインを削除します。
+
+```
+codex plugin remove superloopy@beefiker
+```
+
+marketplace source も不要な場合は削除します。
+
+```
+codex plugin marketplace remove beefiker
+```
+
+アンインストール後に Codex を再起動してください。任意の local bootstrap cleanup: plugin の削除は Codex の plugin config と cache を扱いますが、`superloopy` wrapper と個人ディレクトリへコピーされた agents は残ることがあります。agent ファイルをカスタマイズしている場合は、削除前に確認してください。
+
+```
+rm -f ~/.local/bin/superloopy
+rm -f ~/.codex/agents/franky.toml ~/.codex/agents/zoro.toml ~/.codex/agents/usopp.toml ~/.codex/agents/jinbe.toml ~/.codex/agents/robin.toml ~/.codex/agents/nami.toml
+```
+
+`CODEX_HOME`、`SUPERLOOPY_BIN_DIR`、`CODEX_LOCAL_BIN_DIR` を使ってインストール先を変えた場合は、その設定先を削除してください。
+
 <sub>MIT ライセンス。</sub>

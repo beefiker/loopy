@@ -76,4 +76,51 @@ codex plugin add superloopy@beefiker
 
 checkout에서 설치한다면 `node src/cli.js install --json`을 실행하세요.
 
+## 업데이트
+
+Codex marketplace로 설치했다면 marketplace snapshot을 갱신합니다.
+
+```
+codex plugin marketplace upgrade beefiker
+```
+
+업데이트 뒤 Codex를 재시작하세요. hooks가 Modified로 보이면 정상입니다. 다시 승인하면 그 다음 승인된 세션에서 새 버전 기준으로 `SessionStart` bootstrap이 다시 실행됩니다. 끝나면 `superloopy doctor`를 돌려 확인하세요.
+
+그래도 플러그인이 예전 상태처럼 보이거나 degraded가 남으면, 갱신된 marketplace에서 repair reinstall을 한 번 실행하세요.
+
+```
+codex plugin add superloopy@beefiker
+```
+
+checkout에서 설치했다면 checkout을 갱신하고 installer를 다시 실행합니다.
+
+```
+git pull --ff-only
+node src/cli.js install --json
+superloopy doctor
+```
+
+## 제거
+
+Codex에서 설치된 플러그인을 제거합니다.
+
+```
+codex plugin remove superloopy@beefiker
+```
+
+marketplace source도 더 이상 필요 없다면 같이 제거합니다.
+
+```
+codex plugin marketplace remove beefiker
+```
+
+제거 뒤 Codex를 재시작하세요. 선택적 local bootstrap cleanup: plugin 제거는 Codex의 plugin config와 cache를 지우지만, `superloopy` wrapper와 개인 agents 사본은 남을 수 있습니다. agent 파일을 수정한 적이 있다면 지우기 전에 꼭 확인하세요.
+
+```
+rm -f ~/.local/bin/superloopy
+rm -f ~/.codex/agents/franky.toml ~/.codex/agents/zoro.toml ~/.codex/agents/usopp.toml ~/.codex/agents/jinbe.toml ~/.codex/agents/robin.toml ~/.codex/agents/nami.toml
+```
+
+`CODEX_HOME`, `SUPERLOOPY_BIN_DIR`, `CODEX_LOCAL_BIN_DIR`로 설치 위치를 바꿨다면 그 경로를 정리하세요.
+
 <sub>MIT 라이선스.</sub>

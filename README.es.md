@@ -76,4 +76,51 @@ Reinicia Codex después de instalar el plugin. Si Codex te pide revisar hooks, a
 
 Si instalas desde un checkout, ejecuta `node src/cli.js install --json`.
 
+## Actualización
+
+Si instalaste desde el Codex marketplace, actualiza el marketplace snapshot:
+
+```
+codex plugin marketplace upgrade beefiker
+```
+
+Reinicia Codex después de actualizar. Si los hooks aparecen como Modified, es esperado; vuelve a aprobarlos y la siguiente sesión aprobada ejecutará el bootstrap `SessionStart` con la versión nueva. Después ejecuta `superloopy doctor`.
+
+Si el plugin todavía parece viejo o sigue degradado, haz un repair reinstall desde el marketplace actualizado:
+
+```
+codex plugin add superloopy@beefiker
+```
+
+Si instalaste desde un checkout, actualiza el checkout y vuelve a ejecutar el installer:
+
+```
+git pull --ff-only
+node src/cli.js install --json
+superloopy doctor
+```
+
+## Desinstalación
+
+Elimina el plugin instalado de Codex:
+
+```
+codex plugin remove superloopy@beefiker
+```
+
+Si ya no necesitas el marketplace source, elimínalo también:
+
+```
+codex plugin marketplace remove beefiker
+```
+
+Reinicia Codex después de desinstalar. Optional local bootstrap cleanup: eliminar el plugin cubre la config y cache de plugins de Codex, pero el wrapper `superloopy` y los agents copiados en tu directorio personal pueden quedar. Revísalos antes de borrarlos, sobre todo si personalizaste algún agent.
+
+```
+rm -f ~/.local/bin/superloopy
+rm -f ~/.codex/agents/franky.toml ~/.codex/agents/zoro.toml ~/.codex/agents/usopp.toml ~/.codex/agents/jinbe.toml ~/.codex/agents/robin.toml ~/.codex/agents/nami.toml
+```
+
+Si instalaste con `CODEX_HOME`, `SUPERLOOPY_BIN_DIR` o `CODEX_LOCAL_BIN_DIR`, limpia esas rutas configuradas.
+
 <sub>Licencia MIT.</sub>
