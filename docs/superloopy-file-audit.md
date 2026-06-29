@@ -31,6 +31,7 @@ Superloopy is its own lightweight loop harness: one small CLI, repo-local `.supe
 | `.github/assets/jinbe.png` | README crew-card image for the jinbe gate-reviewer agent. | Documentation image only; no executable plugin logic. |
 | `.github/assets/robin.png` | README crew-card image for the robin auditor agent. | Documentation image only; no executable plugin logic. |
 | `.github/assets/nami.png` | README crew-card image for the nami navigator agent. | Documentation image only; no executable plugin logic. |
+| `.github/assets/transferloom-clone-reference.png` | README clone-demo screenshot showing the validated Transferloom.com Superloopy clone reference. | Documentation image only; generated from the local clone output and contains no executable plugin logic. |
 | `docs/superloopy-design-audit.md` | Doctor-verified decision matrix for naming, compatibility, and threshold records. | Records Superloopy decisions, not source-project lineage. |
 | `docs/superloopy-crew-lines.md` | Crew-line precedent, policy, and runtime contract for presentation-only handoff flavor. | Keeps lines Superloopy-original and non-authoritative beside mechanical evidence state. |
 | `docs/superloopy-file-audit.md` | File-by-file audit and reviewability note. | Proves every Git-visible file has a role and boundary. |

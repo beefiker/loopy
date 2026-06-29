@@ -63,6 +63,8 @@ test("public docs describe real marketplace install and bootstrap", async () => 
   assert.match(readme, /git pull --ff-only/);
   assert.match(readme, /codex plugin remove superloopy@beefiker/);
   assert.match(readme, /codex plugin marketplace remove beefiker/);
+  assert.match(readme, /## Troubleshooting/);
+  assert.match(readme, /Older Codex CLI builds can have trouble/);
   assert.match(readme, /optional local bootstrap cleanup/i);
   assert.doesNotMatch(readme, /\/Users\/bee|<repo-url>/);
   assert.match(skill, /first approved `SessionStart` hook/);
@@ -108,6 +110,8 @@ test("README lists the packaged Superloopy skills and their jobs", async () => {
     assert.match(content, /superloopy-loop/);
     assert.match(content, /superloopy-research/);
     assert.match(content, /superloopy-clone/);
+    assert.match(content, /transferloom-clone-reference\.png/);
+    assert.match(content, /Transferloom\.com/);
     assert.match(content, /loopy research/);
     assert.match(content, /loopy clone/);
     assert.match(content, /loopywork/);
@@ -217,6 +221,8 @@ test("clone skill blocks approximating JS-driven hero and animation sections", a
   assert.match(skill, /DOM subtree.*CSS class block.*JS driver/is);
   assert.match(skill, /approximation.*blocker/is);
   assert.match(skill, /section crop/i);
+  assert.match(skill, /Transferloom\.com is a reference result/);
+  assert.match(skill, /desktop\/mobile browser validation/);
 });
 
 function listRepoFiles() {

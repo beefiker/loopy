@@ -40,6 +40,12 @@ Superloopy はコマンド層を小さく保ちます。専門的な進め方は
 
 Loop skill が標準のガードレールです。`loopy` は evidence loop を開始または再開し、`loopy team` は crew mode に上げます。`loopywork`、`lpy`、`$lpy` は最初の guidance だけを注入します。Research と clone は明示的に使う専門モードで、どちらも完了文だけではなく Superloopy evidence を残して終わります。
 
+## クローンデモ
+
+[![Transferloom.com クローン参考](.github/assets/transferloom-clone-reference.png)](https://transferloom.com/)
+
+`superloopy-clone` は Transferloom.com をローカルで再現し、desktop/mobile のブラウザ検証に合格しました。この参考実行では sticky nav、animated hero、app preview sections、comparison table、security panel、sister app banner、footer、local assets、Superloopy evidence trail を保持しています。
+
 ## Crew
 
 大きな作業向けに、Superloopy は `.codex/agents/` に 6 つの任意サブエージェントを用意しています。それぞれが 1 つのレーンを担当します。プラグインのインストール時に自動で入ります。再コピーが必要なときは `superloopy agents install` を使えます。推奨モデル設定は `docs/superloopy-model-policy.md` に記録され、`superloopy doctor` が確認します。
@@ -103,6 +109,12 @@ superloopy doctor
 ```
 
 checkout インストールは `npx` 管理ではありません。`npx` self-update は、安定した installer が `superloopy-install.json` snapshot をインストール先に書き込めるようになってから有効にします。
+
+## トラブルシューティング
+
+プラグインのインストールまたは更新コマンドが失敗する場合は、まず Codex CLI を更新してください。古い Codex CLI では、現在の plugin marketplace コマンドや hook 承認フローがうまく動かないことがあります。
+
+CLI 更新後に Codex を再起動し、marketplace のインストールまたは更新コマンドを再実行してください。Modified hooks が表示されたら承認し、`superloopy doctor` で確認します。
 
 ## アンインストール
 

@@ -40,6 +40,12 @@ Superloopy mantiene pequeña la capa de comandos. Las skills guardan el flujo es
 
 La skill de loop es la barandilla por defecto. `loopy` inicia o reanuda el evidence loop; `loopy team` sube a crew mode. `loopywork`, `lpy` y `$lpy` solo inyectan guidance inicial. Research y clone son modos especializados opt-in, y ambos terminan registrando Superloopy evidence en lugar de confiar en una frase de estado.
 
+## Demo de clonación
+
+[![Referencia de clonación de Transferloom.com](.github/assets/transferloom-clone-reference.png)](https://transferloom.com/)
+
+`superloopy-clone` reprodujo Transferloom.com en local y pasó validación de navegador desktop/mobile. La ejecución de referencia conservó sticky nav, animated hero, app preview sections, comparison table, security panel, sister app banner, footer, local assets y el Superloopy evidence trail.
+
 ## Crew
 
 Para trabajos grandes, Superloopy incluye seis subagentes opcionales en `.codex/agents/`, cada uno con una línea de trabajo. Se instalan automáticamente con el plugin; `superloopy agents install` solo vuelve a copiarlos si lo necesitas. Los valores de modelo recomendados están en `docs/superloopy-model-policy.md` y `superloopy doctor` los verifica.
@@ -103,6 +109,12 @@ superloopy doctor
 ```
 
 Las instalaciones desde checkout no están gestionadas por `npx`. El self-update con `npx` queda reservado para un instalador futuro que escriba un snapshot `superloopy-install.json` en una raíz de instalación estable.
+
+## Solución de problemas
+
+Si fallan los comandos de instalación o actualización del plugin, actualiza primero el Codex CLI. Las versiones antiguas del Codex CLI pueden tener problemas con los comandos actuales de plugin marketplace y la aprobación de hooks.
+
+Después de actualizar el CLI, reinicia Codex, vuelve a ejecutar el comando de instalación o actualización del marketplace, aprueba cualquier hook Modified y revisa con `superloopy doctor`.
 
 ## Desinstalación
 

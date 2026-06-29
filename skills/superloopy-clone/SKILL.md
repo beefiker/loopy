@@ -11,6 +11,12 @@ When multiple URLs are provided, process each host independently. Keep every sit
 
 This is not "inspect once, then redraw." Act as the foreman: inspect one section, write the exact spec, dispatch or build that bounded slice, then keep extracting the next section while builders run. A hard section is where extraction gets stricter, not where approximation becomes acceptable.
 
+## Reference Example
+
+Transferloom.com is a reference result for this workflow: `superloopy-clone` reproduced the page locally and passed desktop/mobile browser validation with preserved sticky navigation, animated hero, app preview sections, comparison table, security panel, sister app banner, footer, local assets, and a Superloopy evidence trail.
+
+Use that bar for completion claims. A clone is successful only when it has this shape of evidence: source screenshots, research notes, component specs, downloaded assets, local browser screenshots, validation output, visual QA notes, and a final evidence artifact.
+
 ## Superloopy Contract
 
 - Create or reuse a Superloopy plan. Use an evidence root like `.superloopy/evidence/website-clone/<hostname>/`.

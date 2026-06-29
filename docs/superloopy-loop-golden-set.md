@@ -73,6 +73,7 @@ Total: 100 points.
 | `.github/assets/jinbe.png` | Audit coverage. | Must remain a README documentation image, not runtime plugin logic. |
 | `.github/assets/robin.png` | Audit coverage. | Must remain a README documentation image, not runtime plugin logic. |
 | `.github/assets/nami.png` | Audit coverage. | Must remain a README documentation image, not runtime plugin logic. |
+| `.github/assets/transferloom-clone-reference.png` | Audit coverage and README clone-demo reference. | Must remain a documentation screenshot for the validated Transferloom.com clone, not runtime plugin logic. |
 | `docs/superloopy-design-audit.md` | `src/design-audit.js`, `test/doctor.test.js`. | Must keep required decision rows with reason, effect, and guard. |
 | `docs/superloopy-crew-lines.md` | `test/docs.test.js`, audit coverage. | Must record the precedent pattern, no-copied-quotes rule, terminal-only behavior, and presentation-only authority boundary. |
 | `docs/superloopy-file-audit.md` | `test/audit.test.js`, `src/file-audit.js`, doctor file-audit check. | Must list every Git-visible file with non-empty role and compatibility-boundary cells. |
@@ -173,3 +174,4 @@ Total: 100 points.
 | Turn 1 | 88 | `npm test`; `node src/cli.js doctor --json`. | `docs/superloopy-loop-golden-set.md`, `docs/superloopy-file-audit.md`, `test/docs.test.js`, `test/doctor.test.js`. | Added strict golden set and inventory checks. | Raise score by making naming Superloopy-native. |
 | Turn 2 | 96 | Targeted gate, docs, audit, and doctor tests. | Runtime modules, docs, tests, skill metadata, and doctor contract. | Renamed public/internal contracts to review gate, matrix gate, design audit, and generic comparison scan while preserving strict gates. | Reach 100 with fresh audit, doctor, and full tests. |
 | Turn 3 | 100 | Final `rg` audit; final `node src/cli.js doctor --json`; final `npm test`. | Final audit records and inventory rows. | Fresh audit from current files confirms Superloopy-owned names and preserved gate compatibility. | Keep docs and doctor checks focused as files change. |
+| Turn 4 | 100 | `node scripts/validate-clone.mjs` in the Transferloom clone workspace; targeted docs/plugin tests; `node src/cli.js doctor --json`. | README locales, `skills/superloopy-clone/SKILL.md`, docs/tests inventory, and clone-demo image. | Added troubleshooting for stale Codex CLI installs and a validated Transferloom.com clone reference. | Keep reference examples evidence-backed and local-path-free. |
