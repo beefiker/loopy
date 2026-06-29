@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { bootstrapHasUserSignal, bootstrapSuperloopy, formatBootstrapHookContext } from "./agents.js";
+import { runAutoUpdateCheck } from "./auto-update.js";
 import { parseJson } from "./args.js";
 import { resolveEvidenceArtifact } from "./artifacts.js";
 import { buildGuide } from "./guide.js";
@@ -101,6 +102,12 @@ export async function runSessionStartHook(payload) {
   if (typeof payload.cwd !== "string") return "";
   if (transcriptHasContextPressureMarker(payload.transcript_path)) return "";
   const contexts = [];
+  try {
+    const update = await runAutoUpdateCheck({ env: process.env });
+    if (update.notices.length > 0) contexts.push(update.notices.join("\n\n"));
+  } catch {
+    // Update checks must never break the bootstrap/session context hook.
+  }
   try {
     const bootstrap = await bootstrapSuperloopy(payload.cwd);
     if (bootstrapHasUserSignal(bootstrap)) {

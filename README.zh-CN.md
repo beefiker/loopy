@@ -84,6 +84,8 @@ codex plugin add superloopy@beefiker
 codex plugin marketplace upgrade beefiker
 ```
 
+Superloopy 会在 `SessionStart` 检查更新。marketplace 安装由 Codex 管理，因此 Superloopy 不会为它启动 `npx` self-update；如果确认有新版本，它会提示你运行 marketplace upgrade 并重新批准 Modified hooks。
+
 升级后重启 Codex。如果 hooks 显示为 Modified，这是正常的；重新批准后，下一次已批准的会话会用新版本重新运行 `SessionStart` bootstrap。然后运行 `superloopy doctor`。
 
 如果插件仍然像旧版本，或仍显示 degraded，请从已刷新 marketplace 做一次 repair reinstall：
@@ -99,6 +101,8 @@ git pull --ff-only
 node src/cli.js install --json
 superloopy doctor
 ```
+
+checkout 安装不是 `npx` 管理的。`npx` self-update 只会在未来有稳定 installer、并在安装根目录写入 `superloopy-install.json` snapshot 之后启用。
 
 ## 卸载
 

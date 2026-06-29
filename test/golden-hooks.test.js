@@ -139,6 +139,51 @@ test("golden: SessionStart bootstraps CLI and agents once, then stays quiet", as
   assert.equal(second.stdout, "");
 });
 
+test("golden: SessionStart reports marketplace-managed Superloopy updates without running npx self-update", async () => {
+  const repo = await tempRepo();
+  const home = join(repo, "home");
+  const codexHome = join(home, ".codex");
+  const binDir = join(repo, "bin");
+  const pluginRoot = join(repo, "store", "superloopy", "1.0.0");
+  await mkdir(pluginRoot, { recursive: true });
+  const spawnLog = join(repo, "spawn.log");
+  const env = {
+    ...process.env,
+    HOME: home,
+    CODEX_HOME: codexHome,
+    PLUGIN_ROOT: pluginRoot,
+    SUPERLOOPY_BIN_DIR: binDir,
+    SUPERLOOPY_CURRENT_VERSION: "1.0.0",
+    SUPERLOOPY_LATEST_VERSION: "1.0.1",
+    SUPERLOOPY_AUTO_UPDATE_INTERVAL_MS: "0",
+    SUPERLOOPY_AUTO_UPDATE_STATE_PATH: join(repo, "auto-update.json"),
+    SUPERLOOPY_AUTO_UPDATE_LOG_PATH: join(repo, "auto-update.log"),
+    SUPERLOOPY_AUTO_UPDATE_WAIT: "1",
+    SUPERLOOPY_AUTO_UPDATE_COMMAND: process.execPath,
+    SUPERLOOPY_AUTO_UPDATE_ARGS_JSON: JSON.stringify(["-e", `require("node:fs").writeFileSync(${JSON.stringify(spawnLog)}, "ran")`]),
+    PATH: `${binDir}${process.platform === "win32" ? ";" : ":"}${process.env.PATH ?? ""}`
+  };
+
+  const result = runCli(["hook", "session-start"], {
+    env,
+    input: `${JSON.stringify({
+      hook_event_name: "SessionStart",
+      session_id: "sess.1",
+      turn_id: "turn.1",
+      transcript_path: null,
+      cwd: repo,
+      model: "gpt-5",
+      permission_mode: "default"
+    })}\n`
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const context = JSON.parse(result.stdout).hookSpecificOutput.additionalContext;
+  assert.match(context, /codex plugin marketplace upgrade beefiker/);
+  assert.match(context, /hook re-approval/);
+  assert.equal(existsSync(spawnLog), false);
+});
+
 test("golden: PreToolUse create_goal guard tells Codex to use update_goal for lifecycle changes", () => {
   const result = runCli(["hook", "pre-tool-use"], {
     input: `${JSON.stringify({

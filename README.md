@@ -84,6 +84,8 @@ If you installed from the Codex marketplace, refresh the marketplace snapshot:
 codex plugin marketplace upgrade beefiker
 ```
 
+Superloopy checks for updates on `SessionStart`. Marketplace installs are Codex-managed, so Superloopy never starts an `npx` self-update for them; when a newer version is detected, it tells you to run the marketplace upgrade and re-approve modified hooks.
+
 Restart Codex after the upgrade. If hooks show up as Modified, approve them; the following approved session reruns the `SessionStart` bootstrap on the new version. Then run `superloopy doctor`.
 
 If the plugin still looks stale or degraded after that, do a repair reinstall from the refreshed marketplace:
@@ -99,6 +101,8 @@ git pull --ff-only
 node src/cli.js install --json
 superloopy doctor
 ```
+
+Checkout installs are not `npx`-managed. `npx` self-update is reserved for a future installer that writes a `superloopy-install.json` snapshot into a stable install root.
 
 ## Uninstall
 

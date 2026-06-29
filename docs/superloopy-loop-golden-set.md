@@ -81,12 +81,13 @@ Total: 100 points.
 | `docs/superloopy-loop-golden-set.md` | `test/docs.test.js` golden-set assertions. | Must list every Git-visible file, score each accepted run, and keep threshold history append-only. |
 | `docs/superloopy-model-policy.md` | `test/docs.test.js`, `test/doctor.test.js`. | Must record allowed model values and state that model choice is steering, not proof. |
 | `hooks/pre-tool-use.json` | `test/plugin.test.js`, doctor hook check. | Must route to `node "${PLUGIN_ROOT}/src/cli.js" hook pre-tool-use`. |
-| `hooks/session-start.json` | `test/golden-hooks.test.js`, doctor hook check. | Must route first-launch bootstrap and optional SessionStart context through the Superloopy CLI. |
+| `hooks/session-start.json` | `test/golden-hooks.test.js`, doctor hook check. | Must route first-launch bootstrap, marketplace update notices, and optional SessionStart context through the Superloopy CLI. |
 | `hooks/stop.json` | Optional runtime hook file, direct hook tests. | Must route Stop continuation through the Superloopy CLI and stay inert unless `SUPERLOOPY_STOP_HOOK=on`. |
 | `hooks/subagent-stop.json` | `test/plugin.test.js`, doctor hook check. | Must route executor, review, QA, and gate SubagentStop receipt validation through the Superloopy CLI. |
 | `hooks/subagent-stop-audit.json` | `test/plugin.test.js`, doctor hook check. | Must route robin verdict validation through the Superloopy CLI. |
 | `hooks/user-prompt-submit.json` | `test/plugin.test.js`, doctor hook check. | Must route prompt steering and trigger-scoped context injection through the Superloopy CLI. |
-| `package.json` | `npm test`, doctor dependency check. | Must stay dependency-free and expose `superloopy`, `test`, and `check` scripts. |
+| `package.json` | `npm test`, doctor dependency check. | Must stay dependency-free and expose `superloopy`, `test`, `check`, and `sync-version` scripts. |
+| `scripts/sync-version.mjs` | `test/sync-version.test.js`. | Must stamp `package.json` and `.codex-plugin/plugin.json` from one authoritative version without publishing or adding dependencies. |
 | `skills/superloopy-clone/SKILL.md` | `test/plugin.test.js`, audit coverage. | Must describe authorized browser-assisted website cloning with specs, assets, build validation, visual QA, and Superloopy evidence receipts. |
 | `skills/superloopy-clone/agents/openai.yaml` | Audit coverage and reviewability check. | Must remain minimal Superloopy discovery metadata for website cloning. |
 | `skills/superloopy-loop/SKILL.md` | `test/docs.test.js`, doctor skill check. | Must describe guide, proof, capture, evidence, check, finish, gates, and receipt rules accurately. |
@@ -98,6 +99,9 @@ Total: 100 points.
 | `src/agents.js` | `test/cli.test.js`, `test/golden-hooks.test.js`, audit coverage. | Must install bundled Superloopy custom agents and command wrapper, skip identical files, and refuse changed local files unless `--force` is used. |
 | `src/args.js` | CLI and loop tests using parsed flags/stdin/JSON. | Must parse shared CLI inputs without dependencies. |
 | `src/artifacts.js` | Gate and evidence tests. | Must reject missing, empty, symlink, outside-root, and invalid gate artifacts. |
+| `src/auto-update.js` | `test/auto-update.test.js`, `test/golden-hooks.test.js`. | Must report marketplace-managed updates, throttle/check state, and run npx self-update only for explicit npx-local snapshots. |
+| `src/auto-update-plan.js` | `test/auto-update.test.js`. | Must compare semver versions, resolve current/latest versions, honor env overrides, and build the default future npx update command. |
+| `src/auto-update-state.js` | `test/auto-update.test.js`. | Must persist auto-update state/logs and guard concurrent update attempts with a stale-safe lock. |
 | `src/audit.js` | `test/golden-audit.test.js`. | Must re-run command-backed criteria, cache unchanged work, and mark non-reproducing re-runs inconclusive (never auto-fail). |
 | `src/audit-hooks.js` | `test/golden-audit-hooks.test.js`. | Must re-derive the floor in-process and accept only verdicts hash-bound to that fresh re-run; block forged/stale/missing verdicts; idempotent on replay. |
 | `src/audit-verdict.js` | `test/golden-audit-verdict.test.js`. | Must enforce structural rules and symmetric floor dominance (the LLM cannot upgrade OR flip a non-reproducing re-run). |
@@ -118,7 +122,8 @@ Total: 100 points.
 | `src/goals.js` | `test/goals.test.js`, loop tests. | Must keep deterministic goal parsing, criteria lookup, completion guards, and evidence collection. |
 | `src/guide.js` | CLI, docs, hook, and evidence tests. | Must produce next action, proof target, proof plan, templates, recorded evidence, and blockers. |
 | `src/help.js` | CLI help tests. | Must show the shortest evidence-backed flow and pass-artifact rule. |
-| `src/hooks.js` | Hook and golden-hook tests. | Must keep startup bootstrap, stop continuation, prompt context, steering, scoped roots, and receipt validation fail-closed. |
+| `src/hooks.js` | Hook and golden-hook tests. | Must keep startup bootstrap, marketplace update notices, stop continuation, prompt context, steering, scoped roots, and receipt validation fail-closed. |
+| `src/install-flow.js` | `test/auto-update.test.js`. | Must distinguish marketplace, checkout, future npx-local snapshot, and unknown install states so unsafe npx updates stay off. |
 | `src/loop.js` | Core loop and CLI tests. | Must preserve lifecycle state, ledger appends, evidence recording, review, checkpoint, status, and steering. |
 | `src/matrix-gate.js` | Matrix gate golden tests. | Must validate compatible matrix gate shape through Superloopy artifacts only. |
 | `src/model-policy.js` | `test/doctor.test.js`. | Must fail doctor when model policy docs or bundled agent TOML defaults drift. |
@@ -128,9 +133,11 @@ Total: 100 points.
 | `src/report.js` | Report and CLI evidence tests. | Must write portable evidence reports with summary counts, warnings, timestamps, artifacts, timeline, and next action. |
 | `src/review-gate.js` | Review gate golden tests. | Must validate strict five-section review gate shape through Superloopy artifacts only. |
 | `src/store.js` | Loop, hook, and scoped-session tests. | Must normalize sessions, isolate `.superloopy/` state, write JSON atomically, and append ledger entries. |
+| `src/spawn-command.js` | `test/auto-update.test.js`. | Must route npm/npx through Windows `.cmd` shims and leave other commands unchanged. |
 | `src/subagent-attempts.js` | `npm test`, doctor reviewability. | Must count the 3-attempt cap (with a session/cwd fallback key) and record the exhaustion ledger signal. |
 | `src/trace.js` | Loop-gate and CLI evidence tests. | Must show artifact-backed proof, warnings, missing proof, suggested paths, ledger timeline, and evidence summary counts. |
 | `test/audit.test.js` | `npm test`. | Must fail if repo files are missing from audit or reviewability limits are exceeded. |
+| `test/auto-update.test.js` | `npm test`. | Must prove marketplace skip notices, checkout skip behavior, future npx-local snapshot behavior, semver planning, install-flow detection, and Windows npx shims. |
 | `test/subagent-receipt.test.js` | `npm test`. | Must prove the attempt cap counts without agent_id and records a ledger signal on exhaustion. |
 | `test/cli-evidence.test.js` | `npm test`. | Must cover public evidence commands and finalization behavior end to end. |
 | `test/cli.test.js` | `npm test`. | Must cover install, symlinked bin execution, help, create, begin, next, status, guide, and hook smoke paths. |
@@ -156,6 +163,7 @@ Total: 100 points.
 | `test/plugin.test.js` | `npm test`. | Must verify plugin manifest, hook route integrity, and packaged skill metadata. |
 | `test/pre-tool-use.test.js` | `npm test`. | Must verify Superloopy blocks native complete status until aggregate completion is real. |
 | `test/report.test.js` | `npm test`. | Must verify report artifacts remain portable and guide-backed. |
+| `test/sync-version.test.js` | `npm test`. | Must prove Superloopy package and plugin manifest versions are stamped from one release version. |
 
 ## Run History
 
