@@ -3,7 +3,7 @@ import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { hasFlag, parseJson, readFlag, readStdin } from "./args.js";
 import {
-  bootstrapLoopy,
+  bootstrapSuperloopy,
   formatAgentsInstallResult,
   formatBinInstallResult,
   formatBootstrapResult,
@@ -100,7 +100,7 @@ async function runBin(subcommand, argv, stdout, cwd) {
 
 async function runInstall(argv, stdout, cwd) {
   const json = hasFlag(argv, "--json");
-  const result = await bootstrapLoopy(cwd, argv);
+  const result = await bootstrapSuperloopy(cwd, argv);
   stdout.write(json ? `${JSON.stringify(result, null, 2)}\n` : formatBootstrapResult(result));
   return result.ok ? 0 : 1;
 }
@@ -197,42 +197,42 @@ async function runHook(subcommand, stdin, stdout) {
 
 function formatLoopResult(subcommand, result) {
   if (subcommand === "begin") {
-    return `loopy began: ${result.goal.id} ${result.goal.title}\n${formatGuideResult(result)}`;
+    return `superloopy began: ${result.goal.id} ${result.goal.title}\n${formatGuideResult(result)}`;
   }
-  if (subcommand === "create") return `loopy plan created: ${result.plan.goals.length} goal(s)\n${formatGuideResult(result)}`;
+  if (subcommand === "create") return `superloopy plan created: ${result.plan.goals.length} goal(s)\n${formatGuideResult(result)}`;
   if (subcommand === "next") {
-    if (result.done) return `loopy: all goals complete\n${formatGuideResult(result)}`;
-    return `loopy next: ${result.goal.id} ${result.goal.title}\n${formatGuideResult(result)}`;
+    if (result.done) return `superloopy: all goals complete\n${formatGuideResult(result)}`;
+    return `superloopy next: ${result.goal.id} ${result.goal.title}\n${formatGuideResult(result)}`;
   }
   if (subcommand === "guide") return formatGuideResult(result);
   if (subcommand === "trace") return formatTraceResult(result);
-  if (subcommand === "report") return `loopy report: ${result.artifact.relativePath}\n${formatGuideResult(result)}`;
+  if (subcommand === "report") return `superloopy report: ${result.artifact.relativePath}\n${formatGuideResult(result)}`;
   if (subcommand === "check") return formatCheckResult(result);
   if (subcommand === "evidence") {
-    return `loopy evidence: ${result.goal.id}/${result.criterion.id} -> ${result.criterion.status}\n${formatGuideResult(result)}`;
+    return `superloopy evidence: ${result.goal.id}/${result.criterion.id} -> ${result.criterion.status}\n${formatGuideResult(result)}`;
   }
   if (subcommand === "capture") {
-    return `loopy capture: ${result.goal.id}/${result.criterion.id} -> ${result.criterion.status} (${result.capture.artifact})\n${formatGuideResult(result)}`;
+    return `superloopy capture: ${result.goal.id}/${result.criterion.id} -> ${result.criterion.status} (${result.capture.artifact})\n${formatGuideResult(result)}`;
   }
   if (subcommand === "prove") {
-    return `loopy prove: ${result.goal.id}/${result.criterion.id} -> ${result.criterion.status} (${result.capture.artifact})\n${formatGuideResult(result)}`;
+    return `superloopy prove: ${result.goal.id}/${result.criterion.id} -> ${result.criterion.status} (${result.capture.artifact})\n${formatGuideResult(result)}`;
   }
   if (subcommand === "checkpoint") {
-    return `loopy checkpoint: ${result.goal.id} -> ${result.goal.status}\n${formatGuideResult(result)}`;
+    return `superloopy checkpoint: ${result.goal.id} -> ${result.goal.status}\n${formatGuideResult(result)}`;
   }
   if (subcommand === "review") {
-    return `loopy review: ${result.artifact.relativePath}\n${formatGuideResult(result)}`;
+    return `superloopy review: ${result.artifact.relativePath}\n${formatGuideResult(result)}`;
   }
   if (subcommand === "finish") {
-    return `loopy finish: ${result.summary.aggregateComplete ? "complete" : result.goal.status}\n${formatGuideResult(result)}`;
+    return `superloopy finish: ${result.summary.aggregateComplete ? "complete" : result.goal.status}\n${formatGuideResult(result)}`;
   }
   if (subcommand === "handoff") {
     const crewLine = result.crewLine ? `${formatCrewLine(result.crewLine)}\n` : "";
-    return `${crewLine}loopy handoff: ${result.handoff.id} ${result.handoff.agent} -> ${result.handoff.status} [${result.handoff.normalizedVerdict}]\n`;
+    return `${crewLine}superloopy handoff: ${result.handoff.id} ${result.handoff.agent} -> ${result.handoff.status} [${result.handoff.normalizedVerdict}]\n`;
   }
   if (subcommand === "fleet") {
     const verdict = result.summary.byVerdict;
-    const lines = [`loopy fleet: ${result.summary.dispatched} dispatched (accept ${verdict.accept}, reject ${verdict.reject}, needs-context ${verdict["needs-context"]}, pending ${verdict.pending})`];
+    const lines = [`superloopy fleet: ${result.summary.dispatched} dispatched (accept ${verdict.accept}, reject ${verdict.reject}, needs-context ${verdict["needs-context"]}, pending ${verdict.pending})`];
     for (const item of result.handoffs ?? []) {
       if (item.crewLine) lines.push(`- ${formatCrewLine(item.crewLine)}`);
     }
@@ -241,18 +241,18 @@ function formatLoopResult(subcommand, result) {
     if (result.warning) lines.push(result.warning);
     return `${lines.join("\n")}\n`;
   }
-  return `loopy status: ${result.summary.goals.complete}/${result.summary.goals.total} goals complete\n${formatGuideResult(result)}`;
+  return `superloopy status: ${result.summary.goals.complete}/${result.summary.goals.total} goals complete\n${formatGuideResult(result)}`;
 }
 
 function topHelp() {
   return [
     "Usage:",
-    "  loopy loop <subcommand> [args]",
-    "  loopy install [--bin-dir PATH] [--target PATH] [--force] [--json]",
-    "  loopy bin install [--bin-dir PATH] [--force] [--json]",
-    "  loopy agents install [--target PATH] [--force] [--json]",
-    "  loopy doctor [--json] [--comparison-path PATH]",
-    "  loopy hook session-start|pre-tool-use|stop|subagent-stop|user-prompt-submit",
+    "  superloopy loop <subcommand> [args]",
+    "  superloopy install [--bin-dir PATH] [--target PATH] [--force] [--json]",
+    "  superloopy bin install [--bin-dir PATH] [--force] [--json]",
+    "  superloopy agents install [--target PATH] [--force] [--json]",
+    "  superloopy doctor [--json] [--comparison-path PATH]",
+    "  superloopy hook session-start|pre-tool-use|stop|subagent-stop|user-prompt-submit",
     "",
     helpText()
   ].join("\n");
@@ -261,9 +261,9 @@ function topHelp() {
 function agentsHelp() {
   return [
     "Usage:",
-    "  loopy agents install [--target PATH] [--force] [--json]",
+    "  superloopy agents install [--target PATH] [--force] [--json]",
     "",
-    "Installs bundled Loopy custom agents into Codex's personal agents directory.",
+    "Installs bundled Superloopy custom agents into Codex's personal agents directory.",
     "Default target: $CODEX_HOME/agents when CODEX_HOME is set, otherwise ~/.codex/agents.",
     "Existing identical files are left unchanged. Conflicting files require --force.",
     ""
@@ -273,10 +273,10 @@ function agentsHelp() {
 function binHelp() {
   return [
     "Usage:",
-    "  loopy bin install [--bin-dir PATH] [--force] [--json]",
+    "  superloopy bin install [--bin-dir PATH] [--force] [--json]",
     "",
-    "Installs a small loopy command wrapper into a PATH directory.",
-    "Default target: $LOOPY_BIN_DIR, then $CODEX_LOCAL_BIN_DIR, then ~/.local/bin.",
+    "Installs a small superloopy command wrapper into a PATH directory.",
+    "Default target: $SUPERLOOPY_BIN_DIR, then $CODEX_LOCAL_BIN_DIR, then ~/.local/bin.",
     "Existing identical files are left unchanged. Conflicting files require --force.",
     ""
   ].join("\n");

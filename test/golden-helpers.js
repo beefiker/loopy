@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 export async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-golden-"));
+  return mkdtemp(join(tmpdir(), "superloopy-golden-"));
 }
 
 export function runCli(args, options = {}) {
@@ -17,11 +17,11 @@ export function runCli(args, options = {}) {
 }
 
 export async function writeEvidence(repo, name, content = "proof\n") {
-  const evidenceDir = join(repo, ".loopy", "evidence");
+  const evidenceDir = join(repo, ".superloopy", "evidence");
   await mkdir(evidenceDir, { recursive: true });
   const path = join(evidenceDir, name);
   await writeFile(path, content, "utf8");
-  return `.loopy/evidence/${name}`;
+  return `.superloopy/evidence/${name}`;
 }
 
 export async function writeQualityGateArtifacts(repo) {
@@ -49,7 +49,7 @@ function auditSection(paths) {
 // Writes a GENUINE audit verdict bound to a manual (no-command) criterion's proof
 // artifact, so it survives completion-time re-derivation (enforceAuditProvenance). The
 // criterion re-derives to floor:pass / rerunStatus:"manual-recheck" and the cited
-// artifact hash matches Loopy's fresh re-run of that same artifact.
+// artifact hash matches Superloopy's fresh re-run of that same artifact.
 export async function writeGenuineAuditVerdict(repo, { criterion = "G001/C001", artifact, name = "genuine-audit-verdict.json" } = {}) {
   const verdict = {
     criterion,
@@ -57,8 +57,8 @@ export async function writeGenuineAuditVerdict(repo, { criterion = "G001/C001", 
     rerun: { artifact, status: "manual-recheck", exitCode: null },
     citations: [`Re-derived manual proof for ${criterion}.`]
   };
-  await mkdir(join(repo, ".loopy", "evidence", "audit"), { recursive: true });
-  const rel = `.loopy/evidence/audit/${name}`;
+  await mkdir(join(repo, ".superloopy", "evidence", "audit"), { recursive: true });
+  const rel = `.superloopy/evidence/audit/${name}`;
   await writeFile(join(repo, rel), JSON.stringify(verdict), "utf8");
   return rel;
 }
@@ -128,7 +128,7 @@ export function reviewStyleQualityGate(paths, overrides = {}) {
     criteriaCoverage: {
       totalCriteria: 2,
       passCount: 2,
-      originalIntent: "Build a strict but lighter Loopy loop harness.",
+      originalIntent: "Build a strict but lighter Superloopy loop harness.",
       desiredOutcome: "Artifact-backed completion with prompt-injection and hook guardrails.",
       userOutcomeReview: "The user-visible loop behavior is covered by golden tests.",
       adversarialClassesCovered: ["malformed_input", "prompt_injection", "stale_state"]
@@ -161,7 +161,7 @@ export function matrixStyleQualityGate(paths) {
           id: "cli-run",
           kind: "cli-transcript",
           path: paths.cliRun,
-          description: "CLI transcript for the user-facing Loopy flow."
+          description: "CLI transcript for the user-facing Superloopy flow."
         },
         {
           id: "red-team",
@@ -174,7 +174,7 @@ export function matrixStyleQualityGate(paths) {
         {
           id: "contract-loop",
           contractRef: "approved-plan:loop",
-          obligation: "Loopy must complete only with artifact-backed verification.",
+          obligation: "Superloopy must complete only with artifact-backed verification.",
           status: "covered",
           surfaceEvidenceRefs: ["surface-cli"],
           adversarialCaseRefs: ["case-malformed"]
@@ -195,7 +195,7 @@ export function matrixStyleQualityGate(paths) {
           id: "case-malformed",
           contractRef: "approved-plan:loop",
           scenario: "Malformed steering or weak completion proof is supplied.",
-          expectedBehavior: "Loopy fails closed and requires real evidence.",
+          expectedBehavior: "Superloopy fails closed and requires real evidence.",
           verdict: "passed",
           artifactRefs: ["red-team"]
         }

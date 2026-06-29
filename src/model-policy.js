@@ -1,9 +1,9 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { LOOPY_AGENT_NAMES } from "./agents.js";
+import { SUPERLOOPY_AGENT_NAMES } from "./agents.js";
 
-export const MODEL_POLICY_PATH = "docs/loopy-model-policy.md";
+export const MODEL_POLICY_PATH = "docs/superloopy-model-policy.md";
 
 const ALLOWED_MODELS = ["gpt-5.5", "gpt-5.4", "gpt-5.4-mini", "gpt-5.3-codex-spark"];
 const ALLOWED_EFFORTS = ["low", "medium", "high", "xhigh"];
@@ -27,7 +27,7 @@ export async function checkModelPolicy(cwd) {
   for (const model of ALLOWED_MODELS) {
     if (!doc.includes(model)) problems.push(`${MODEL_POLICY_PATH} must list allowed model ${model}`);
   }
-  for (const agent of LOOPY_AGENT_NAMES) {
+  for (const agent of SUPERLOOPY_AGENT_NAMES) {
     const path = join(cwd, ".codex", "agents", `${agent}.toml`);
     if (!existsSync(path)) {
       problems.push(`missing .codex/agents/${agent}.toml`);

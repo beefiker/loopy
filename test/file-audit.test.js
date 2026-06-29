@@ -7,21 +7,21 @@ import test from "node:test";
 import { checkFileAudit } from "../src/file-audit.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-file-audit-"));
+  return mkdtemp(join(tmpdir(), "superloopy-file-audit-"));
 }
 
 test("checkFileAudit reports stale inventory rows without needing doctor wiring", async () => {
   const repo = await tempRepo();
   await mkdir(join(repo, "docs"), { recursive: true });
   await writeFile(join(repo, "docs", "audit.md"), [
-    "Boundary statement: Loopy does not vendor reference code.",
-    "Loopy-native boundary: all public names belong to Loopy.",
-    "## Original Loopy role",
+    "Boundary statement: Superloopy does not vendor reference code.",
+    "Superloopy-native boundary: all public names belong to Superloopy.",
+    "## Original Superloopy role",
     "",
-    "| File | Original Loopy role | Compatibility boundary |",
+    "| File | Original Superloopy role | Compatibility boundary |",
     "| --- | --- | --- |",
-    "| `live.js` | Live Loopy file. | Original implementation. |",
-    "| `deleted.js` | Removed Loopy file. | Original implementation. |"
+    "| `live.js` | Live Superloopy file. | Original implementation. |",
+    "| `deleted.js` | Removed Superloopy file. | Original implementation. |"
   ].join("\n"), "utf8");
 
   const result = await checkFileAudit(repo, {

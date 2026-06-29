@@ -1,10 +1,10 @@
 {
-  "name": "loopy",
+  "name": "superloopy",
   "version": "0.1.0",
   "description": "A lightweight Codex loop harness with strict evidence gates.",
   "type": "module",
   "bin": {
-    "loopy": "src/cli.js"
+    "superloopy": "src/cli.js"
   },
   "scripts": {
     "test": "node --test test/*.test.js",

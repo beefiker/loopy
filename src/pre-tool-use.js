@@ -2,11 +2,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { goalsPath, scopeFromSessionId } from "./store.js";
 
 const CREATE_GOAL_PAYLOAD_WARNING =
-  "Use create_goal with objective only. Omit token_budget so the goal stays unlimited; use update_goal only after Loopy aggregate completion is recorded.";
+  "Use create_goal with objective only. Omit token_budget so the goal stays unlimited; use update_goal only after Superloopy aggregate completion is recorded.";
 const UPDATE_GOAL_COMPLETE_WARNING =
-  "Loopy plan is not complete. Do not call update_goal with status=complete until Loopy aggregate completion is recorded. Run `loopy loop check --json` and `loopy loop finish --evidence \"<summary>\" --json` first.";
+  "Superloopy plan is not complete. Do not call update_goal with status=complete until Superloopy aggregate completion is recorded. Run `superloopy loop check --json` and `superloopy loop finish --evidence \"<summary>\" --json` first.";
 const UPDATE_GOAL_UNREADABLE_WARNING =
-  "Loopy plan exists but could not be read. Refusing update_goal completion until `loopy loop status --json` can verify aggregate completion.";
+  "Superloopy plan exists but could not be read. Refusing update_goal completion until `superloopy loop status --json` can verify aggregate completion.";
 
 export function runPreToolUseHook(payload) {
   if (!isRecord(payload)) return "";

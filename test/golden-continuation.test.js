@@ -10,7 +10,7 @@ import { createLoop, evidenceLoop, nextLoop } from "../src/loop.js";
 import { appendLedger, loopControlPath, readLedger, scopeFromSessionId } from "../src/store.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-engine-"));
+  return mkdtemp(join(tmpdir(), "superloopy-engine-"));
 }
 
 // Real deps wired without depending on hooks.js internals.
@@ -21,7 +21,7 @@ function deps(env) {
       return import("../src/loop.js").then((m) => m.statusLoop(payload.cwd, argv));
     },
     guideForPayload: (_payload, plan) => ({ plan }),
-    renderContinuationDirective: () => "Loopy continuation",
+    renderContinuationDirective: () => "Superloopy continuation",
     scopeFromPayload: (payload) => scopeFromSessionId(payload.session_id),
     appendLedger,
     contextPressureMarkers: ["context compacted"],
@@ -49,7 +49,7 @@ test("engine blocks with an unresolved plan and records an iteration", async () 
 test("max-iterations cap marks blocked and never completes", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
-  const d = deps({ LOOPY_MAX_ITERATIONS: "1" });
+  const d = deps({ SUPERLOOPY_MAX_ITERATIONS: "1" });
 
   assert.equal(JSON.parse(await decideContinuation(stop(repo), d)).decision, "block"); // iteration 1
   assert.equal(await decideContinuation(stop(repo), d), ""); // iteration 2 > 1 -> blocked
@@ -57,14 +57,14 @@ test("max-iterations cap marks blocked and never completes", async () => {
   const control = await readLoopControl(repo);
   assert.equal(control.status, "blocked");
   assert.equal(control.blockedReason, "max-iterations");
-  const plan = JSON.parse(await readFile(join(repo, ".loopy", "goals.json"), "utf8"));
+  const plan = JSON.parse(await readFile(join(repo, ".superloopy", "goals.json"), "utf8"));
   assert.equal(plan.aggregateCompletion, null);
 });
 
 test("no-progress guard blocks a stalled loop using a high-water mark", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
-  const d = deps({ LOOPY_MAX_STALLED: "2" });
+  const d = deps({ SUPERLOOPY_MAX_STALLED: "2" });
 
   assert.equal(JSON.parse(await decideContinuation(stop(repo), d)).decision, "block"); // iter1 advance (highWater 0)
   assert.equal(JSON.parse(await decideContinuation(stop(repo), d)).decision, "block"); // iter2 stalled 1
@@ -77,7 +77,7 @@ test("no-progress guard blocks a stalled loop using a high-water mark", async ()
 test("a corrupt plan surfaces as a block, never a silent stop (fail-closed)", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
-  await writeFile(join(repo, ".loopy", "goals.json"), "{ not valid json", "utf8");
+  await writeFile(join(repo, ".superloopy", "goals.json"), "{ not valid json", "utf8");
   const out = await decideContinuation(stop(repo), deps({}));
   assert.notEqual(out, "");
   assert.equal(JSON.parse(out).decision, "block");
@@ -93,7 +93,7 @@ test("uncapped iterations + an absurd max-stalled still hit the no-progress floo
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
   // The footgun combo: hard cap off, stall tolerance set absurdly high.
-  const d = deps({ LOOPY_MAX_ITERATIONS: "0", LOOPY_MAX_STALLED: "2000000000" });
+  const d = deps({ SUPERLOOPY_MAX_ITERATIONS: "0", SUPERLOOPY_MAX_STALLED: "2000000000" });
 
   let blocked = false;
   for (let i = 0; i < 60 && !blocked; i += 1) {
@@ -103,7 +103,7 @@ test("uncapped iterations + an absurd max-stalled still hit the no-progress floo
   const control = await readLoopControl(repo);
   assert.equal(control.status, "blocked");
   assert.equal(control.blockedReason, "no-progress");
-  const plan = JSON.parse(await readFile(join(repo, ".loopy", "goals.json"), "utf8"));
+  const plan = JSON.parse(await readFile(join(repo, ".superloopy", "goals.json"), "utf8"));
   assert.equal(plan.aggregateCompletion, null);
 });
 
@@ -111,13 +111,13 @@ test("recorded proof resets the stall counter and keeps the loop going", async (
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
   await nextLoop(repo);
-  const d = deps({ LOOPY_MAX_STALLED: "2" });
+  const d = deps({ SUPERLOOPY_MAX_STALLED: "2" });
 
   await decideContinuation(stop(repo), d); // iter1
   await decideContinuation(stop(repo), d); // iter2 stalled 1
   // Record real artifact-backed proof so the high-water mark advances.
-  await writeFile(join(repo, ".loopy", "evidence", "G001-C001.txt"), "proof\n", "utf8");
-  await evidenceLoop(repo, ["--goal-id", "G001", "--criterion-id", "C001", "--status", "pass", "--artifact", ".loopy/evidence/G001-C001.txt"]);
+  await writeFile(join(repo, ".superloopy", "evidence", "G001-C001.txt"), "proof\n", "utf8");
+  await evidenceLoop(repo, ["--goal-id", "G001", "--criterion-id", "C001", "--status", "pass", "--artifact", ".superloopy/evidence/G001-C001.txt"]);
 
   const out = await decideContinuation(stop(repo), d); // progress -> stalled resets, still blocks (work remains)
   assert.equal(JSON.parse(out).decision, "block");
@@ -154,13 +154,13 @@ test("a quota limit pauses the loop (resumable) without incrementing, recorded o
   assert.equal(paused.length, 1); // idempotent across repeated quota-limited stops
 });
 
-test("LOOPY_QUOTA_MARKERS extends the quota marker set", async () => {
+test("SUPERLOOPY_QUOTA_MARKERS extends the quota marker set", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
   const transcript = join(repo, "transcript.txt");
   await writeFile(transcript, "... please retry after your weekly cap ...\n", "utf8");
 
-  const out = await decideContinuation(stop(repo, { transcript_path: transcript }), deps({ LOOPY_QUOTA_MARKERS: "weekly cap, something-else" }));
+  const out = await decideContinuation(stop(repo, { transcript_path: transcript }), deps({ SUPERLOOPY_QUOTA_MARKERS: "weekly cap, something-else" }));
   assert.equal(out, "");
   assert.equal((await readLoopControl(repo)).status, "paused");
 });
@@ -191,7 +191,7 @@ test("aggregate completion stops the loop and clears control state", async () =>
   assert.ok(existsSync(loopControlPath(repo)));
 
   // Force aggregate completion directly on the plan.
-  const planPath = join(repo, ".loopy", "goals.json");
+  const planPath = join(repo, ".superloopy", "goals.json");
   const plan = JSON.parse(await readFile(planPath, "utf8"));
   plan.aggregateCompletion = { status: "complete", completedAt: "2026-06-24T00:00:00.000Z" };
   await writeFile(planPath, `${JSON.stringify(plan, null, 2)}\n`, "utf8");
@@ -205,14 +205,14 @@ test("scoped sessions keep their own loop-control state", async () => {
   await createLoop(repo, ["--brief", "Ship", "--session-id", "sess.1"]);
   await decideContinuation(stop(repo, { session_id: "sess.1" }), deps({}));
 
-  assert.ok(existsSync(join(repo, ".loopy", "sessions", "sess.1", "loop-control.json")));
-  assert.equal(existsSync(join(repo, ".loopy", "loop-control.json")), false);
+  assert.ok(existsSync(join(repo, ".superloopy", "sessions", "sess.1", "loop-control.json")));
+  assert.equal(existsSync(join(repo, ".superloopy", "loop-control.json")), false);
 });
 
-test("LOOPY_CONTINUATION=off restores the legacy single-continuation brake", async () => {
+test("SUPERLOOPY_CONTINUATION=off restores the legacy single-continuation brake", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
-  const d = deps({ LOOPY_CONTINUATION: "off" });
+  const d = deps({ SUPERLOOPY_CONTINUATION: "off" });
 
   assert.equal(await decideContinuation(stop(repo, { stop_hook_active: true }), d), ""); // brake honored
   assert.equal(JSON.parse(await decideContinuation(stop(repo, { stop_hook_active: false }), d)).decision, "block"); // one continuation
@@ -242,7 +242,7 @@ test("evaluateProgress counts the monotonic audited term as progress", () => {
 test("decideContinuation stops re-driving when only blocked criteria remain", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
-  const planPath = join(repo, ".loopy", "goals.json");
+  const planPath = join(repo, ".superloopy", "goals.json");
   const plan = JSON.parse(await readFile(planPath, "utf8"));
   plan.goals[0].criteria[0].status = "blocked";
   plan.goals[0].criteria[1].status = "pass"; // nothing pending/fail -> not re-drivable
@@ -253,6 +253,6 @@ test("decideContinuation stops re-driving when only blocked criteria remain", as
 
 test("loopControlLimits parses env with loose defaults", () => {
   assert.deepEqual(loopControlLimits({}), { enabled: true, maxIterations: 50, maxStalled: 3 });
-  assert.deepEqual(loopControlLimits({ LOOPY_MAX_ITERATIONS: "0", LOOPY_CONTINUATION: "off" }), { enabled: false, maxIterations: 0, maxStalled: 3 });
-  assert.equal(loopControlLimits({ LOOPY_MAX_ITERATIONS: "bogus" }).maxIterations, 50); // invalid -> default
+  assert.deepEqual(loopControlLimits({ SUPERLOOPY_MAX_ITERATIONS: "0", SUPERLOOPY_CONTINUATION: "off" }), { enabled: false, maxIterations: 0, maxStalled: 3 });
+  assert.equal(loopControlLimits({ SUPERLOOPY_MAX_ITERATIONS: "bogus" }).maxIterations, 50); // invalid -> default
 });

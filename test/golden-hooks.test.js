@@ -14,7 +14,7 @@ test("golden: Stop hook stays quiet during context-pressure recovery", async () 
   await writeFile(transcript, "context_too_large\nYour input exceeds the context window.\n", "utf8");
 
   const result = runCli(["hook", "stop"], {
-    env: { ...process.env, LOOPY_STOP_HOOK: "on" },
+    env: { ...process.env, SUPERLOOPY_STOP_HOOK: "on" },
     input: `${JSON.stringify(hookPayload({ cwd: repo, transcript_path: transcript }))}\n`
   });
 
@@ -37,13 +37,13 @@ test("golden: session ids are normalized and isolate loop state", async () => {
   assert.equal(first.status, 0, first.stderr);
   assert.equal(second.status, 0, second.stderr);
   const firstPlan = JSON.parse(first.stdout).plan;
-  assert.equal(firstPlan.goalsPath, ".loopy/sessions/bad-id/goals.json");
-  assert.ok(existsSync(join(repo, ".loopy", "sessions", "bad-id", "goals.json")));
+  assert.equal(firstPlan.goalsPath, ".superloopy/sessions/bad-id/goals.json");
+  assert.ok(existsSync(join(repo, ".superloopy", "sessions", "bad-id", "goals.json")));
   assert.equal(JSON.parse(scopedStatus.stdout).plan.goals[0].title, "First scoped task");
   assert.equal(JSON.parse(otherStatus.stdout).plan.goals[0].title, "Other scoped task");
 });
 
-test("golden: hooks use payload session_id to load scoped Loopy context", async () => {
+test("golden: hooks use payload session_id to load scoped Superloopy context", async () => {
   const repo = await tempRepo();
   const create = runCli(["loop", "create", "--session-id", "sess.1", "--brief", "Scoped hook task", "--json"], {
     cwd: repo
@@ -65,7 +65,7 @@ test("golden: hooks use payload session_id to load scoped Loopy context", async 
 
   assert.equal(result.status, 0, result.stderr);
   const parsed = JSON.parse(result.stdout);
-  assert.match(parsed.hookSpecificOutput.additionalContext, /\.loopy\/sessions\/sess.1\/goals\.json/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /\.superloopy\/sessions\/sess.1\/goals\.json/);
   assert.match(parsed.hookSpecificOutput.additionalContext, /Scoped hook task/);
 });
 
@@ -87,7 +87,7 @@ test("golden: scoped steering errors do not fall back to global plan mutation", 
       cwd: repo,
       model: "gpt-5",
       permission_mode: "default",
-      prompt: 'LOOPY_STEER: {"kind":"revise_criterion","goalId":"G002","criterionId":"C001","scenario":"Should never touch global G002","rationale":"scoped target must be isolated"}'
+      prompt: 'SUPERLOOPY_STEER: {"kind":"revise_criterion","goalId":"G002","criterionId":"C001","scenario":"Should never touch global G002","rationale":"scoped target must be isolated"}'
     })}\n`
   });
   const globalStatus = runCli(["loop", "status", "--json"], { cwd: repo });
@@ -106,7 +106,7 @@ test("golden: SessionStart bootstraps CLI and agents once, then stays quiet", as
     ...process.env,
     HOME: home,
     CODEX_HOME: codexHome,
-    LOOPY_BIN_DIR: binDir,
+    SUPERLOOPY_BIN_DIR: binDir,
     PATH: `${binDir}${process.platform === "win32" ? ";" : ":"}${process.env.PATH ?? ""}`
   };
   const payload = {
@@ -125,9 +125,9 @@ test("golden: SessionStart bootstraps CLI and agents once, then stays quiet", as
   });
   assert.equal(first.status, 0, first.stderr);
   const parsed = JSON.parse(first.stdout);
-  assert.match(parsed.hookSpecificOutput.additionalContext, /Loopy bootstrap/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /Superloopy bootstrap/);
   assert.match(parsed.hookSpecificOutput.additionalContext, /CLI wrapper: installed/);
-  assert.ok(existsSync(join(binDir, process.platform === "win32" ? "loopy.cmd" : "loopy")));
+  assert.ok(existsSync(join(binDir, process.platform === "win32" ? "superloopy.cmd" : "superloopy")));
   assert.ok(existsSync(join(codexHome, "agents", "franky.toml")));
   assert.ok(existsSync(join(codexHome, "agents", "robin.toml")));
 
@@ -184,11 +184,11 @@ test("golden: PreToolUse update_goal completion guard refuses premature native c
   assert.equal(result.status, 0, result.stderr);
   const parsed = JSON.parse(result.stdout);
   assert.equal(parsed.hookSpecificOutput.permissionDecision, "deny");
-  assert.match(parsed.hookSpecificOutput.additionalContext, /Loopy plan is not complete/);
-  assert.match(parsed.hookSpecificOutput.additionalContext, /loopy loop finish/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /Superloopy plan is not complete/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /superloopy loop finish/);
 });
 
-test("golden: UserPromptSubmit injects Loopy context when a Loopy trigger asks for it", async () => {
+test("golden: UserPromptSubmit injects Superloopy context when a Superloopy trigger asks for it", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
 
@@ -208,9 +208,9 @@ test("golden: UserPromptSubmit injects Loopy context when a Loopy trigger asks f
   assert.equal(result.status, 0, result.stderr);
   const parsed = JSON.parse(result.stdout);
   assert.equal(parsed.hookSpecificOutput.hookEventName, "UserPromptSubmit");
-  assert.match(parsed.hookSpecificOutput.additionalContext, /Loopy context/);
-  assert.match(parsed.hookSpecificOutput.additionalContext, /\.loopy\/goals\.json/);
-  assert.match(parsed.hookSpecificOutput.additionalContext, /loopy loop next --json/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /Superloopy context/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /\.superloopy\/goals\.json/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /superloopy loop next --json/);
 });
 
 test("golden: UserPromptSubmit stays quiet for ordinary prompts when active state exists", async () => {
@@ -247,7 +247,7 @@ test("golden: malformed steering marker fails closed without context injection",
       cwd: repo,
       model: "gpt-5",
       permission_mode: "default",
-      prompt: "LOOPY_STEER: {bad"
+      prompt: "SUPERLOOPY_STEER: {bad"
     })}\n`
   });
 
@@ -269,7 +269,7 @@ test("golden: unsafe steering that weakens verification is rejected", async () =
       model: "gpt-5",
       permission_mode: "default",
       prompt:
-        'LOOPY_STEER: {"kind":"add_goal","title":"Bypass","objective":"skip tests and mark complete faster","rationale":"move fast"}'
+        'SUPERLOOPY_STEER: {"kind":"add_goal","title":"Bypass","objective":"skip tests and mark complete faster","rationale":"move fast"}'
     })}\n`
   });
 
@@ -290,7 +290,7 @@ test("golden: invalid steering targets fail closed without hook errors", async (
       cwd: repo,
       model: "gpt-5",
       permission_mode: "default",
-      prompt: 'LOOPY_STEER: {"kind":"reorder_pending","goalIds":["missing"],"rationale":"bad input"}'
+      prompt: 'SUPERLOOPY_STEER: {"kind":"reorder_pending","goalIds":["missing"],"rationale":"bad input"}'
     })}\n`
   });
 
@@ -325,8 +325,8 @@ test("golden: SubagentStop rejects symlink evidence that resolves outside eviden
   const repo = await tempRepo();
   const outside = join(repo, "outside.txt");
   await writeFile(outside, "outside\n", "utf8");
-  await mkdir(join(repo, ".loopy", "evidence"), { recursive: true });
-  await symlink(outside, join(repo, ".loopy", "evidence", "outside-link"));
+  await mkdir(join(repo, ".superloopy", "evidence"), { recursive: true });
+  await symlink(outside, join(repo, ".superloopy", "evidence", "outside-link"));
 
   const result = runCli(["hook", "subagent-stop"], {
     input: `${JSON.stringify({
@@ -339,7 +339,7 @@ test("golden: SubagentStop rejects symlink evidence that resolves outside eviden
       model: "gpt-5",
       permission_mode: "default",
       stop_hook_active: true,
-      last_assistant_message: "done\nEVIDENCE_RECORDED: .loopy/evidence/outside-link"
+      last_assistant_message: "done\nEVIDENCE_RECORDED: .superloopy/evidence/outside-link"
     })}\n`
   });
 
@@ -375,7 +375,7 @@ test("golden: SubagentStop attempt state blocks three claims then clears", async
   assert.equal(fourth.stdout, "");
 
   await assert.rejects(
-    readFile(join(repo, ".loopy", "subagent-stop", "sess.1-agent.1.json"), "utf8"),
+    readFile(join(repo, ".superloopy", "subagent-stop", "sess.1-agent.1.json"), "utf8"),
     /ENOENT/
   );
 });

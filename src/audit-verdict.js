@@ -1,6 +1,6 @@
 // Deterministic validation for the robin's verdict (the LLM judgment).
 //
-// Loopy treats the LLM verdict as ADVISORY and DOWNGRADE-ONLY: it can never
+// Superloopy treats the LLM verdict as ADVISORY and DOWNGRADE-ONLY: it can never
 // turn a deterministic re-run failure/inconclusive into a pass. The hard
 // guarantees enforced here are (a) the verdict is structurally well formed,
 // (b) it cites the re-run artifact by content hash, and (c) floor dominance is
@@ -12,9 +12,9 @@
 // supplied by its caller. Callers (audit-hooks.js accept path, audit-gate-verify.js
 // completion path) pass a FRESHLY re-derived entry — never the worker-writable
 // recorded audit-state — so the hash and floor it dominance-checks against are values
-// Loopy just computed in-process, which the worker cannot predict or forge.
+// Superloopy just computed in-process, which the worker cannot predict or forge.
 //
-// NOTE on independence: Loopy cannot verify the auditor subagent was actually
+// NOTE on independence: Superloopy cannot verify the auditor subagent was actually
 // spawned read-only/isolated — that depends on the host honoring the agent frame.
 
 const VERDICTS = new Set(["pass", "fail"]);
@@ -48,33 +48,33 @@ export function validateAuditVerdict(value, resolveArtifactPath) {
   return normalized;
 }
 
-// Cross-checks the (structurally valid) verdict against Loopy's own audit-state
+// Cross-checks the (structurally valid) verdict against Superloopy's own audit-state
 // entry. observedRerunHash is the content hash the hook computed for the cited
 // re-run artifact. Returns { ok, reason }.
 export function verifyVerdictAgainstState(verdict, stateEntry, observedRerunHash) {
   if (!stateEntry) {
-    return fail("No Loopy audit-state for this criterion. Run `loopy loop audit` first.");
+    return fail("No Superloopy audit-state for this criterion. Run `superloopy loop audit` first.");
   }
   if (verdict.criterion !== stateEntry.criterion) {
     return fail(`Verdict criterion ${verdict.criterion} does not match audited criterion ${stateEntry.criterion}.`);
   }
   if (typeof observedRerunHash !== "string" || observedRerunHash !== stateEntry.rerunArtifactHash) {
-    return fail("Cited re-run artifact does not match Loopy's recorded re-run (content hash mismatch).");
+    return fail("Cited re-run artifact does not match Superloopy's recorded re-run (content hash mismatch).");
   }
   if (verdict.rerun.status !== stateEntry.rerunStatus) {
-    return fail(`Verdict re-run status ${verdict.rerun.status} disagrees with Loopy's recorded ${stateEntry.rerunStatus}.`);
+    return fail(`Verdict re-run status ${verdict.rerun.status} disagrees with Superloopy's recorded ${stateEntry.rerunStatus}.`);
   }
   if (stateEntry.rerunExitCode !== undefined && stateEntry.rerunExitCode !== null && verdict.rerun.exitCode !== stateEntry.rerunExitCode) {
-    return fail(`Verdict re-run exit code ${verdict.rerun.exitCode} disagrees with Loopy's recorded ${stateEntry.rerunExitCode}.`);
+    return fail(`Verdict re-run exit code ${verdict.rerun.exitCode} disagrees with Superloopy's recorded ${stateEntry.rerunExitCode}.`);
   }
-  // Floor dominance is symmetric: the advisory verdict may only act when Loopy's
+  // Floor dominance is symmetric: the advisory verdict may only act when Superloopy's
   // own deterministic re-run reproduced (floor pass). A pass over a non-reproducing
   // floor would fabricate proof; a fail over an inconclusive (flaky) floor would let
   // the advisory channel auto-flip a re-run that did NOT reproduce — exactly what the
   // deterministic spine refuses to do. Either way a non-pass floor must SURFACE to a
   // human (via the audit report), never be driven off/on pass by the LLM.
   if (stateEntry.floor !== "pass") {
-    return fail(`Cannot accept an advisory verdict when Loopy's deterministic floor is "${stateEntry.floor}"; it must surface for a human.`);
+    return fail(`Cannot accept an advisory verdict when Superloopy's deterministic floor is "${stateEntry.floor}"; it must surface for a human.`);
   }
   return { ok: true, reason: null };
 }

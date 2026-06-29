@@ -1,17 +1,17 @@
 ---
-name: loopy-clone
-description: Use when the user asks for Loopy clone or asks to clone, rebuild, reverse-engineer, replicate, or copy a website or page into a Loopy-governed implementation. Triggers on "loopy clone", target URLs plus requests such as "clone this site", "rebuild this page", "make a copy of this website", "pixel-perfect clone", or "AI website clone". Requires browser automation and records component specs, assets, implementation, build output, and visual QA as Loopy evidence.
+name: superloopy-clone
+description: Use when the user asks for Superloopy clone or asks to clone, rebuild, reverse-engineer, replicate, or copy a website or page into a Superloopy-governed implementation. Triggers on "loopy clone", target URLs plus requests such as "clone this site", "rebuild this page", "make a copy of this website", "pixel-perfect clone", or "AI website clone". Requires browser automation and records component specs, assets, implementation, build output, and visual QA as Superloopy evidence.
 ---
 
-# Loopy Clone
+# Superloopy Clone
 
 Reverse-engineer a target URL into a working local implementation with audit artifacts. Use this only for authorized cloning, migration, learning, or recovery work. Do not help with phishing, deceptive impersonation, credential capture, or evading a site's terms.
 
-## Loopy Contract
+## Superloopy Contract
 
-- Create or reuse a Loopy plan. Use an evidence root like `.loopy/evidence/website-clone/<hostname>/`.
+- Create or reuse a Superloopy plan. Use an evidence root like `.superloopy/evidence/website-clone/<hostname>/`.
 - Preserve extraction artifacts: screenshots, topology, behavior notes, component specs, asset inventory, validation output, and visual QA notes.
-- Record final proof with `LOOPY_EVIDENCE: <path-under-active-evidence-root>` when a worker is involved, or `loopy loop evidence` when recording from the parent.
+- Record final proof with `SUPERLOOPY_EVIDENCE: <path-under-active-evidence-root>` when a worker is involved, or `superloopy loop evidence` when recording from the parent.
 - Do not add dependencies without asking. If a clone needs a package for parity, explain why and get approval first.
 
 ## Preflight
@@ -19,7 +19,7 @@ Reverse-engineer a target URL into a working local implementation with audit art
 1. Verify browser automation is available. Prefer Chrome or Playwright-style tools. If none are available, ask for a browser tool before proceeding.
 2. Normalize and validate each target URL. Confirm the page loads.
 3. Inspect the local app stack and existing commands before editing. Run the smallest existing check that proves the baseline, such as `npm run build`, `npm run typecheck`, or `npm test`.
-4. Create research folders if needed: `docs/research/`, `docs/research/components/`, `docs/design-references/`, and the Loopy evidence root.
+4. Create research folders if needed: `docs/research/`, `docs/research/components/`, `docs/design-references/`, and the Superloopy evidence root.
 5. State authorization assumptions if the target is a third-party site.
 
 ## Phase 1 - Reconnaissance
@@ -45,7 +45,7 @@ Build the shared foundation before sections:
 - Content/type shapes for repeated section data.
 - Downloaded assets under the project's existing public asset structure.
 
-Run the relevant build or typecheck after the foundation change and save the output under the Loopy evidence root.
+Run the relevant build or typecheck after the foundation change and save the output under the Superloopy evidence root.
 
 ## Phase 3 - Component Specs
 
@@ -72,7 +72,7 @@ TASK: build <component> from this spec.
 TARGET: <file path>
 SCOPE: only this component and directly required local assets.
 VERIFY: run the focused typecheck/build command.
-DELIVERABLE: report artifact under <active evidence root> and end with LOOPY_EVIDENCE: <artifact>.
+DELIVERABLE: report artifact under <active evidence root> and end with SUPERLOOPY_EVIDENCE: <artifact>.
 ```
 
 After each merge or parent implementation pass:
@@ -112,4 +112,4 @@ Report:
 - Assets downloaded or recreated.
 - Validation commands and results.
 - Visual QA result and remaining gaps.
-- Final Loopy evidence artifact.
+- Final Superloopy evidence artifact.

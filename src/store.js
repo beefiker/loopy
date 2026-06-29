@@ -2,7 +2,7 @@ import { closeSync, openSync, readFileSync, rmSync, statSync, writeSync } from "
 import { appendFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 
-export const LOOPY_DIR = ".loopy";
+export const SUPERLOOPY_DIR = ".superloopy";
 export const EVIDENCE_DIR = "evidence";
 
 export function normalizeLoopSessionId(sessionId) {
@@ -24,17 +24,17 @@ export function scopeFromSessionId(sessionId) {
   return normalized === null ? undefined : { sessionId: normalized };
 }
 
-export function loopyRelativeDir(scope) {
+export function superloopyRelativeDir(scope) {
   const sessionId = normalizeLoopSessionId(scope?.sessionId);
-  return sessionId === null ? LOOPY_DIR : join(LOOPY_DIR, "sessions", sessionId);
+  return sessionId === null ? SUPERLOOPY_DIR : join(SUPERLOOPY_DIR, "sessions", sessionId);
 }
 
-export function loopyDir(cwd, scope) {
-  return join(cwd, loopyRelativeDir(scope));
+export function superloopyDir(cwd, scope) {
+  return join(cwd, superloopyRelativeDir(scope));
 }
 
 export function evidenceRelativeDir(scope) {
-  return join(loopyRelativeDir(scope), EVIDENCE_DIR);
+  return join(superloopyRelativeDir(scope), EVIDENCE_DIR);
 }
 
 export function evidenceDir(cwd, scope) {
@@ -42,19 +42,19 @@ export function evidenceDir(cwd, scope) {
 }
 
 export function briefRelativePath(scope) {
-  return join(loopyRelativeDir(scope), "brief.md");
+  return join(superloopyRelativeDir(scope), "brief.md");
 }
 
 export function goalsRelativePath(scope) {
-  return join(loopyRelativeDir(scope), "goals.json");
+  return join(superloopyRelativeDir(scope), "goals.json");
 }
 
 export function ledgerRelativePath(scope) {
-  return join(loopyRelativeDir(scope), "ledger.jsonl");
+  return join(superloopyRelativeDir(scope), "ledger.jsonl");
 }
 
 export function loopControlRelativePath(scope) {
-  return join(loopyRelativeDir(scope), "loop-control.json");
+  return join(superloopyRelativeDir(scope), "loop-control.json");
 }
 
 export function briefPath(cwd, scope) {
@@ -74,7 +74,7 @@ export function loopControlPath(cwd, scope) {
 }
 
 export function auditStateRelativePath(scope) {
-  return join(loopyRelativeDir(scope), "audit-state.json");
+  return join(superloopyRelativeDir(scope), "audit-state.json");
 }
 
 export function auditStatePath(cwd, scope) {
@@ -85,7 +85,7 @@ export function repoRelativePath(path) {
   return path.split("\\").join("/");
 }
 
-export async function ensureLoopyDirs(cwd, scope) {
+export async function ensureSuperloopyDirs(cwd, scope) {
   await mkdir(evidenceDir(cwd, scope), { recursive: true });
 }
 
@@ -102,12 +102,12 @@ const heldLocks = new Set();
 let lockSequence = 0;
 
 // Serialize a read-modify-write critical section on `targetPath` across PROCESSES
-// (parallel subagents each run a separate `loopy`/hook process). writeJsonAtomic keeps a
+// (parallel subagents each run a separate CLI/hook process). writeJsonAtomic keeps a
 // single write torn-free, but the surrounding read->mutate->write can still lose updates
 // when two processes interleave; this guards the whole section with an O_EXCL lock file.
 // Fail-closed: on timeout it throws rather than proceeding unguarded. A lock is reclaimed
 // only when its holder PROCESS is dead (never on age alone), so a slow-but-alive critical
-// section makes waiters fail closed at the timeout instead of double-entering. Loopy issues
+// section makes waiters fail closed at the timeout instead of double-entering. Superloopy issues
 // one mutation per process and only nests same-file sections, so process-global re-entrancy
 // is sufficient.
 export async function withFileLock(targetPath, fn, options = {}) {
@@ -225,7 +225,7 @@ export async function readPlan(cwd, scope) {
     return JSON.parse(await readFile(goalsPath(cwd, scope), "utf8"));
   } catch (error) {
     if (error && error.code === "ENOENT") {
-      throw new Error("No Loopy plan found. Run `loopy loop create --brief ...` first.");
+      throw new Error("No Superloopy plan found. Run `superloopy loop create --brief ...` first.");
     }
     throw error;
   }
@@ -245,17 +245,17 @@ export async function readLedger(cwd, scope) {
 }
 
 export async function writePlan(cwd, plan, scope) {
-  await ensureLoopyDirs(cwd, scope);
+  await ensureSuperloopyDirs(cwd, scope);
   await writeJsonAtomic(goalsPath(cwd, scope), plan);
 }
 
 export async function appendLedger(cwd, entry, scope) {
-  await ensureLoopyDirs(cwd, scope);
+  await ensureSuperloopyDirs(cwd, scope);
   await appendFile(ledgerPath(cwd, scope), `${JSON.stringify(entry)}\n`, "utf8");
 }
 
 export async function writeBrief(cwd, brief, scope) {
-  await ensureLoopyDirs(cwd, scope);
+  await ensureSuperloopyDirs(cwd, scope);
   await writeFile(briefPath(cwd, scope), brief.endsWith("\n") ? brief : `${brief}\n`, "utf8");
 }
 
@@ -267,6 +267,6 @@ function parseLedgerLine(line, index) {
   try {
     return JSON.parse(line);
   } catch (error) {
-    throw new Error(`Invalid Loopy ledger JSON on line ${index + 1}.`);
+    throw new Error(`Invalid Superloopy ledger JSON on line ${index + 1}.`);
   }
 }

@@ -66,7 +66,7 @@ export function formatGuideResult(result) {
 
 export function renderGuideText(guideResult, summary) {
   const lines = [
-    "Loopy guide",
+    "Superloopy guide",
     "",
     `State: ${guideResult.state}`,
     `Evidence root: \`${guideResult.evidenceRoot}\``,
@@ -205,8 +205,8 @@ function guide(state, plan, fields) {
     flow: buildFlow(state, plan, fields),
     commands: fields.commands,
     paths: {
-      plan: plan.goalsPath ?? ".loopy/goals.json",
-      ledger: plan.ledgerPath ?? ".loopy/ledger.jsonl",
+      plan: plan.goalsPath ?? ".superloopy/goals.json",
+      ledger: plan.ledgerPath ?? ".superloopy/ledger.jsonl",
       evidence: fields.evidenceRoot
     }
   };
@@ -350,7 +350,7 @@ function unresolvedCriterionLine(criterion) {
 }
 
 function command(subcommand, sessionId, args) {
-  const parts = ["loopy", "loop", subcommand];
+  const parts = ["superloopy", "loop", subcommand];
   if (sessionId) parts.push("--session-id", sessionId);
   return [...parts, ...args.map((arg) => quoteCommandArg(arg))].join(" ");
 }

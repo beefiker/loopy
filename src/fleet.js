@@ -1,4 +1,4 @@
-// Parent-side coordination for subagent-driven mode. Loopy does not spawn or schedule workers,
+// Parent-side coordination for subagent-driven mode. Superloopy does not spawn or schedule workers,
 // but the parent (Luffy) can record one handoff per dispatched worker and later reconcile the
 // fleet: which assignments are outstanding, and a SINGLE normalized verdict across the workers'
 // three different vocabularies (reviewer APPROVE/CHANGES_REQUESTED, QA PASS/FAIL, gate
@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { readFlag } from "./args.js";
 import { resolveEvidenceArtifact } from "./artifacts.js";
 import { decorateHandoffWithCrewLine } from "./crew-lines.js";
-import { briefPath, ensureLoopyDirs, loopyRelativeDir, nowIso, scopeFromSessionId, withFileLock, writeJsonAtomic } from "./store.js";
+import { briefPath, ensureSuperloopyDirs, superloopyRelativeDir, nowIso, scopeFromSessionId, withFileLock, writeJsonAtomic } from "./store.js";
 
 // Map each worker vocabulary onto one accept/reject/needs-context/pending enum so the parent
 // integrates worker output mechanically instead of by hand. Lifecycle verdicts are deliberate:
@@ -32,7 +32,7 @@ export function normalizeVerdict(value) {
 }
 
 function handoffsPath(cwd, scope) {
-  return join(cwd, loopyRelativeDir(scope), "handoffs.json");
+  return join(cwd, superloopyRelativeDir(scope), "handoffs.json");
 }
 
 async function readHandoffs(cwd, scope) {
@@ -47,7 +47,7 @@ async function readHandoffs(cwd, scope) {
 
 export async function handoffLoop(cwd, argv) {
   const scope = scopeFromSessionId(readFlag(argv, "--session-id"));
-  const language = readFlag(argv, "--language") ?? process.env.LOOPY_CREW_LANGUAGE;
+  const language = readFlag(argv, "--language") ?? process.env.SUPERLOOPY_CREW_LANGUAGE;
   const id = readFlag(argv, "--id");
   // Distinguish "flag absent" (undefined) from a supplied value so an --id update MERGES only
   // the supplied fields instead of wiping the rest to null.
@@ -57,7 +57,7 @@ export async function handoffLoop(cwd, argv) {
   const verdict = readFlag(argv, "--verdict");
   const artifact = readFlag(argv, "--artifact");
   const handoff = await withFileLock(handoffsPath(cwd, scope), async () => {
-    await ensureLoopyDirs(cwd, scope);
+    await ensureSuperloopyDirs(cwd, scope);
     const state = await readHandoffs(cwd, scope);
     const now = nowIso();
     let entry = id ? state.handoffs.find((item) => item.id === id) : undefined;
@@ -105,7 +105,7 @@ export async function handoffLoop(cwd, argv) {
 
 export async function fleetLoop(cwd, argv) {
   const scope = scopeFromSessionId(readFlag(argv, "--session-id"));
-  const language = readFlag(argv, "--language") ?? process.env.LOOPY_CREW_LANGUAGE;
+  const language = readFlag(argv, "--language") ?? process.env.SUPERLOOPY_CREW_LANGUAGE;
   const state = await readHandoffs(cwd, scope);
   const languageHints = await readCrewLineLanguageHints(cwd, scope);
   const handoffs = state.handoffs.map((handoff) => decorateHandoffWithCrewLine(handoff, { language, languageHints }));
@@ -130,9 +130,9 @@ export async function fleetLoop(cwd, argv) {
       crewLine: handoff.crewLine ?? null
     }));
   const result = { ok: true, kind: "fleet", summary: { dispatched: state.handoffs.length, byVerdict }, outstanding, attention, handoffs };
-  const cap = Number.parseInt(process.env.LOOPY_MAX_PARALLEL ?? "", 10);
+  const cap = Number.parseInt(process.env.SUPERLOOPY_MAX_PARALLEL ?? "", 10);
   if (Number.isInteger(cap) && cap > 0 && outstanding.length > cap) {
-    result.warning = `${outstanding.length} outstanding handoffs exceed LOOPY_MAX_PARALLEL=${cap}; collect some before dispatching more.`;
+    result.warning = `${outstanding.length} outstanding handoffs exceed SUPERLOOPY_MAX_PARALLEL=${cap}; collect some before dispatching more.`;
   }
   return result;
 }

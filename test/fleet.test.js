@@ -7,11 +7,11 @@ import test from "node:test";
 import { fleetLoop, handoffLoop, normalizeVerdict } from "../src/fleet.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-fleet-"));
+  return mkdtemp(join(tmpdir(), "superloopy-fleet-"));
 }
 
 async function writeEvidence(repo, name, content = "proof\n", sessionId = null) {
-  const relativeDir = sessionId === null ? join(".loopy", "evidence") : join(".loopy", "sessions", sessionId, "evidence");
+  const relativeDir = sessionId === null ? join(".superloopy", "evidence") : join(".superloopy", "sessions", sessionId, "evidence");
   const evidenceDir = join(repo, relativeDir);
   await mkdir(evidenceDir, { recursive: true });
   const path = join(evidenceDir, name);
@@ -63,7 +63,7 @@ test("handoffLoop records a worker handoff with a normalized verdict", async () 
   assert.equal(result.handoff.artifact, artifact);
   assert.equal(result.crewLine.speaker, "Franky");
   assert.equal(result.handoff.crewLine.line, "Parts fit. The build holds.");
-  const state = JSON.parse(await readFile(join(repo, ".loopy", "handoffs.json"), "utf8"));
+  const state = JSON.parse(await readFile(join(repo, ".superloopy", "handoffs.json"), "utf8"));
   assert.equal(state.handoffs.length, 1);
   assert.equal(state.handoffs[0].crewLine, undefined);
 });
@@ -95,8 +95,8 @@ test("fleetLoop reconciles dispatched workers and lists outstanding ones", async
 
 test("fleetLoop decorates handoffs in the scoped brief language", async () => {
   const repo = await tempRepo();
-  await mkdir(join(repo, ".loopy", "sessions", "ko-user"), { recursive: true });
-  await writeFile(join(repo, ".loopy", "sessions", "ko-user", "brief.md"), "사용자는 한국어로 작업을 요청했다.\n", "utf8");
+  await mkdir(join(repo, ".superloopy", "sessions", "ko-user"), { recursive: true });
+  await writeFile(join(repo, ".superloopy", "sessions", "ko-user", "brief.md"), "사용자는 한국어로 작업을 요청했다.\n", "utf8");
   await handoffLoop(repo, ["--session-id", "ko-user", "--agent", "robin", "--assignment", "audit", "--verdict", "PASS", "--artifact", await writeEvidence(repo, "audit.txt", "proof\n", "ko-user")]);
 
   const fleet = await fleetLoop(repo, ["--session-id", "ko-user"]);
@@ -140,17 +140,17 @@ test("handoffLoop --id update ignores an empty --agent and preserves identity", 
   assert.equal(updated.handoff.status, "done");
 });
 
-test("fleetLoop warns when outstanding handoffs exceed LOOPY_MAX_PARALLEL", async () => {
+test("fleetLoop warns when outstanding handoffs exceed SUPERLOOPY_MAX_PARALLEL", async () => {
   const repo = await tempRepo();
   await handoffLoop(repo, ["--agent", "franky", "--assignment", "a"]);
   await handoffLoop(repo, ["--agent", "zoro", "--assignment", "b"]);
-  const prev = process.env.LOOPY_MAX_PARALLEL;
-  process.env.LOOPY_MAX_PARALLEL = "1";
+  const prev = process.env.SUPERLOOPY_MAX_PARALLEL;
+  process.env.SUPERLOOPY_MAX_PARALLEL = "1";
   try {
     const fleet = await fleetLoop(repo, []);
-    assert.match(fleet.warning, /exceed LOOPY_MAX_PARALLEL=1/);
+    assert.match(fleet.warning, /exceed SUPERLOOPY_MAX_PARALLEL=1/);
   } finally {
-    if (prev === undefined) delete process.env.LOOPY_MAX_PARALLEL;
-    else process.env.LOOPY_MAX_PARALLEL = prev;
+    if (prev === undefined) delete process.env.SUPERLOOPY_MAX_PARALLEL;
+    else process.env.SUPERLOOPY_MAX_PARALLEL = prev;
   }
 });

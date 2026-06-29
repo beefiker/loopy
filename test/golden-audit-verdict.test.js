@@ -9,7 +9,7 @@ function passVerdict(overrides = {}) {
   return {
     criterion: "G001/C001",
     verdict: "pass",
-    rerun: { artifact: ".loopy/evidence/audit/G001-C001-rerun.txt", status: "pass", exitCode: 0 },
+    rerun: { artifact: ".superloopy/evidence/audit/G001-C001-rerun.txt", status: "pass", exitCode: 0 },
     citations: ["audit/G001-C001-rerun.txt:3 \"status: pass\""],
     ...overrides
   };
@@ -17,7 +17,7 @@ function passVerdict(overrides = {}) {
 
 const stateEntry = {
   criterion: "G001/C001",
-  rerunArtifact: ".loopy/evidence/audit/G001-C001-rerun.txt",
+  rerunArtifact: ".superloopy/evidence/audit/G001-C001-rerun.txt",
   rerunArtifactHash: "abc123",
   rerunStatus: "pass",
   rerunExitCode: 0,
@@ -37,7 +37,7 @@ test("validateAuditVerdict rejects a pass with no citations", () => {
 
 test("validateAuditVerdict requires gap and nextAction on fail", () => {
   assert.throws(() => validateAuditVerdict(passVerdict({ verdict: "fail", citations: ["x"] }), ident), /gap/);
-  const v = validateAuditVerdict(passVerdict({ verdict: "fail", citations: ["x"], gap: "missing edge", nextAction: "loopy loop prove -- npm test" }), ident);
+  const v = validateAuditVerdict(passVerdict({ verdict: "fail", citations: ["x"], gap: "missing edge", nextAction: "superloopy loop prove -- npm test" }), ident);
   assert.equal(v.gap, "missing edge");
 });
 
@@ -66,12 +66,12 @@ test("verifyVerdictAgainstState rejects pass over a non-reproducing floor (downg
 });
 
 test("verifyVerdictAgainstState rejects FAIL over an inconclusive floor (symmetric dominance: flaky re-run surfaces, is not auto-flipped)", () => {
-  const v = validateAuditVerdict(passVerdict({ verdict: "fail", citations: ["x"], gap: "g", nextAction: "loopy loop prove -- npm test", rerun: { artifact: ".loopy/evidence/audit/G001-C001-rerun.txt", status: "pass", exitCode: 0 } }), ident);
+  const v = validateAuditVerdict(passVerdict({ verdict: "fail", citations: ["x"], gap: "g", nextAction: "superloopy loop prove -- npm test", rerun: { artifact: ".superloopy/evidence/audit/G001-C001-rerun.txt", status: "pass", exitCode: 0 } }), ident);
   assert.equal(verifyVerdictAgainstState(v, { ...stateEntry, floor: "inconclusive" }, "abc123").ok, false);
 });
 
-test("verifyVerdictAgainstState rejects a status disagreement with Loopy's record", () => {
-  const v = validateAuditVerdict(passVerdict({ rerun: { artifact: ".loopy/evidence/audit/G001-C001-rerun.txt", status: "fail", exitCode: 1 } }), ident);
+test("verifyVerdictAgainstState rejects a status disagreement with Superloopy's record", () => {
+  const v = validateAuditVerdict(passVerdict({ rerun: { artifact: ".superloopy/evidence/audit/G001-C001-rerun.txt", status: "fail", exitCode: 1 } }), ident);
   assert.equal(verifyVerdictAgainstState(v, stateEntry, "abc123").ok, false);
 });
 

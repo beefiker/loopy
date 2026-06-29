@@ -32,7 +32,7 @@ function runChild(counter) {
 }
 
 test("withFileLock serializes concurrent cross-process read-modify-write without lost updates", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "loopy-lock-"));
+  const dir = await mkdtemp(join(tmpdir(), "superloopy-lock-"));
   const counter = join(dir, "counter.txt");
   await writeFile(counter, "0", "utf8");
 
@@ -44,7 +44,7 @@ test("withFileLock serializes concurrent cross-process read-modify-write without
 });
 
 test("withFileLock is re-entrant within a process (nested same-path does not deadlock)", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "loopy-lock-"));
+  const dir = await mkdtemp(join(tmpdir(), "superloopy-lock-"));
   const target = join(dir, "x.json");
   let inner = false;
   await withFileLock(target, async () => {
@@ -56,7 +56,7 @@ test("withFileLock is re-entrant within a process (nested same-path does not dea
 });
 
 test("withFileLock reclaims a stale lock instead of blocking forever", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "loopy-lock-"));
+  const dir = await mkdtemp(join(tmpdir(), "superloopy-lock-"));
   const target = join(dir, "y.json");
   await writeFile(`${target}.lock`, "999999 0\n", "utf8");
   let ran = false;
@@ -67,7 +67,7 @@ test("withFileLock reclaims a stale lock instead of blocking forever", async () 
 });
 
 test("withFileLock fails closed when a fresh lock is held past the timeout", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "loopy-lock-"));
+  const dir = await mkdtemp(join(tmpdir(), "superloopy-lock-"));
   const target = join(dir, "z.json");
   await writeFile(`${target}.lock`, `${process.pid} ${Date.now()}\n`, "utf8");
   await assert.rejects(

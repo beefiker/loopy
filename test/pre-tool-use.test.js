@@ -9,18 +9,18 @@ import { finishLoop } from "../src/finish.js";
 import { createLoop, evidenceLoop } from "../src/loop.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-pre-tool-"));
+  return mkdtemp(join(tmpdir(), "superloopy-pre-tool-"));
 }
 
 async function writeEvidence(repo, name, content = "proof\n") {
-  const evidenceDir = join(repo, ".loopy", "evidence");
+  const evidenceDir = join(repo, ".superloopy", "evidence");
   await mkdir(evidenceDir, { recursive: true });
   const path = join(evidenceDir, name);
   await writeFile(path, content, "utf8");
-  return `.loopy/evidence/${name}`;
+  return `.superloopy/evidence/${name}`;
 }
 
-test("PreToolUse blocks native update_goal completion while Loopy is incomplete", async () => {
+test("PreToolUse blocks native update_goal completion while Superloopy is incomplete", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
 
@@ -33,16 +33,16 @@ test("PreToolUse blocks native update_goal completion while Loopy is incomplete"
 
   const parsed = JSON.parse(output);
   assert.equal(parsed.hookSpecificOutput.permissionDecision, "deny");
-  assert.match(parsed.hookSpecificOutput.additionalContext, /Loopy plan is not complete/);
-  assert.match(parsed.hookSpecificOutput.additionalContext, /loopy loop finish/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /Superloopy plan is not complete/);
+  assert.match(parsed.hookSpecificOutput.additionalContext, /superloopy loop finish/);
 });
 
-test("PreToolUse allows native update_goal completion after Loopy aggregate completion", async () => {
+test("PreToolUse allows native update_goal completion after Superloopy aggregate completion", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
   await evidenceLoop(repo, ["--goal-id", "G001", "--criterion-id", "C001", "--status", "pass", "--artifact", await writeEvidence(repo, "c1.txt")]);
   await evidenceLoop(repo, ["--goal-id", "G001", "--criterion-id", "C002", "--status", "pass", "--artifact", await writeEvidence(repo, "c2.txt")]);
-  await finishLoop(repo, ["--evidence", "criteria passed", "--artifact", ".loopy/evidence/gate.json"]);
+  await finishLoop(repo, ["--evidence", "criteria passed", "--artifact", ".superloopy/evidence/gate.json"]);
 
   const output = runPreToolUseHook({
     hook_event_name: "PreToolUse",
@@ -54,7 +54,7 @@ test("PreToolUse allows native update_goal completion after Loopy aggregate comp
   assert.equal(output, "");
 });
 
-test("PreToolUse update_goal guard is quiet without a Loopy plan or for non-complete status", async () => {
+test("PreToolUse update_goal guard is quiet without a Superloopy plan or for non-complete status", async () => {
   const repo = await tempRepo();
   const noPlan = runPreToolUseHook({
     hook_event_name: "PreToolUse",
@@ -74,10 +74,10 @@ test("PreToolUse update_goal guard is quiet without a Loopy plan or for non-comp
   assert.equal(blocked, "");
 });
 
-test("PreToolUse refuses completion when Loopy state is unreadable", async () => {
+test("PreToolUse refuses completion when Superloopy state is unreadable", async () => {
   const repo = await tempRepo();
-  await mkdir(join(repo, ".loopy"), { recursive: true });
-  await writeFile(join(repo, ".loopy", "goals.json"), "{bad-json", "utf8");
+  await mkdir(join(repo, ".superloopy"), { recursive: true });
+  await writeFile(join(repo, ".superloopy", "goals.json"), "{bad-json", "utf8");
 
   const output = runPreToolUseHook({
     hook_event_name: "PreToolUse",

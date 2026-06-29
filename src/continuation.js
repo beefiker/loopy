@@ -1,9 +1,9 @@
-// Loopy continuation engine: turns the reactive Stop hook into a bounded,
+// Superloopy continuation engine: turns the reactive Stop hook into a bounded,
 // progress-gated loop that keeps driving the agent toward evidence-backed
 // completion. It NEVER completes anything — completion stays the plan's sole
 // authority. A cap or no-progress stall marks the loop blocked for a human,
 // never a fabricated done. Hook-only, no daemon: each iteration is one
-// short-lived Stop invocation governed by .loopy/loop-control.json.
+// short-lived Stop invocation governed by .superloopy/loop-control.json.
 
 import { closeSync, fstatSync, openSync, readSync } from "node:fs";
 import { mkdir, readFile, rm } from "node:fs/promises";
@@ -19,7 +19,7 @@ const BUDGET_MS = 4000; // pause cleanly below the 5s hook budget
 
 // Quota / usage-limit markers: when the host is rate/usage-limited its transcript shows one of
 // these. The default set is deliberately conservative + specific (a false positive would wrongly
-// pause an otherwise-healthy loop) and is extended per-host via LOOPY_QUOTA_MARKERS (a comma or
+// pause an otherwise-healthy loop) and is extended per-host via SUPERLOOPY_QUOTA_MARKERS (a comma or
 // newline list), since the exact banner text is host-specific. Matched case-insensitively.
 export const QUOTA_LIMIT_MARKERS = [
   "usage limit reached",
@@ -32,7 +32,7 @@ export const QUOTA_LIMIT_MARKERS = [
 ];
 
 export function quotaLimitMarkers(env = {}) {
-  const extra = String(env.LOOPY_QUOTA_MARKERS ?? "")
+  const extra = String(env.SUPERLOOPY_QUOTA_MARKERS ?? "")
     .split(/[,\n]/)
     .map((marker) => marker.trim().toLowerCase())
     .filter((marker) => marker.length > 0);
@@ -41,9 +41,9 @@ export function quotaLimitMarkers(env = {}) {
 
 export function loopControlLimits(env = {}) {
   return {
-    enabled: String(env.LOOPY_CONTINUATION ?? "on").toLowerCase() !== "off",
-    maxIterations: readCount(env.LOOPY_MAX_ITERATIONS, DEFAULT_MAX_ITERATIONS),
-    maxStalled: readCount(env.LOOPY_MAX_STALLED, DEFAULT_MAX_STALLED)
+    enabled: String(env.SUPERLOOPY_CONTINUATION ?? "on").toLowerCase() !== "off",
+    maxIterations: readCount(env.SUPERLOOPY_MAX_ITERATIONS, DEFAULT_MAX_ITERATIONS),
+    maxStalled: readCount(env.SUPERLOOPY_MAX_STALLED, DEFAULT_MAX_STALLED)
   };
 }
 
@@ -105,12 +105,12 @@ export async function decideContinuation(payload, deps) {
     status = await deps.statusForPayload(payload);
   } catch (err) {
     // No active plan -> nothing to drive; allow the stop.
-    if (err instanceof Error && err.message.startsWith("No Loopy plan found.")) return "";
+    if (err instanceof Error && err.message.startsWith("No Superloopy plan found.")) return "";
     // A plan that EXISTS but won't parse (corrupt, or caught mid-write in a co-edited
     // repo) must SURFACE — never be silently treated as completion. Fail closed: block
     // and ask for a re-check. A transient mid-write race self-heals on the next Stop.
     return `${JSON.stringify({ decision: "block", reason: [
-      "Loopy could not read the plan — `.loopy/goals.json` may be corrupt or mid-write.",
+      "Superloopy could not read the plan — `.superloopy/goals.json` may be corrupt or mid-write.",
       "The loop will not complete until the plan is readable again; if this persists, repair the plan file."
     ].join("\n") })}\n`;
   }
@@ -133,7 +133,7 @@ export async function decideContinuation(payload, deps) {
 
   // Quota / usage limit: the host is rate/usage-limited (its transcript tail shows a limit
   // marker). Pause WITHOUT burning the no-progress counter or fabricating completion, recording a
-  // resumable "paused" state. Loopy is hook-driven and cannot self-wake — an external scheduler
+  // resumable "paused" state. Superloopy is hook-driven and cannot self-wake — an external scheduler
   // (or the host itself on quota reset) resumes the loop; this only makes the stall clean and
   // observable so a quota stall is never mis-counted as no-progress or a fabricated done.
   if (transcriptTailHasMarker(payload.transcript_path, quotaLimitMarkers(env))) {

@@ -1,10 +1,10 @@
 // SubagentStop handler for the read-only robin subagent. It validates
 // the auditor's verdict RECEIPT deterministically. Crucially it does NOT trust the
-// recorded .loopy/audit-state.json (worker-writable): on each receipt it RE-DERIVES
+// recorded .superloopy/audit-state.json (worker-writable): on each receipt it RE-DERIVES
 // the cited criterion's floor in-process (auditOneCriterion) and accepts the verdict
 // only if it is hash-bound to that fresh re-run and the floor reproduced. The worker
 // cannot fake a pass — it cannot make a failing command reproduce, and the re-run hash
-// is computed here from Loopy's own fresh capture. Honest limit: Loopy still cannot
+// is computed here from Superloopy's own fresh capture. Honest limit: Superloopy still cannot
 // verify the auditor subagent was spawned isolated/read-only; it trusts the host's
 // agent frame for that and enforces only re-derivation + hash binding + structural shape.
 
@@ -56,11 +56,11 @@ export async function runAuditorStopHook(payload) {
   return `${JSON.stringify({
     decision: "block",
     reason: [
-      "Loopy audit verdict missing or invalid.",
+      "Superloopy audit verdict missing or invalid.",
       `Attempt ${attempt.attempts} of ${MAX_AUDIT_ATTEMPTS}.`,
-      `Re-run \`loopy loop audit\` first, then write a verdict JSON under \`${evidenceRelativeDir(useScope)}/audit/\` that cites Loopy's recorded re-run artifact.`,
+      `Re-run \`superloopy loop audit\` first, then write a verdict JSON under \`${evidenceRelativeDir(useScope)}/audit/\` that cites Superloopy's recorded re-run artifact.`,
       "End your message with:",
-      "LOOPY_AUDIT: <path-under-active-evidence-root>"
+      "SUPERLOOPY_AUDIT: <path-under-active-evidence-root>"
     ].join("\n")
   })}\n`;
 }
@@ -82,7 +82,7 @@ async function tryAcceptVerdict(payload, scope) {
       (artifactPath) => resolveEvidenceArtifact(payload.cwd, artifactPath, scope).relativePath
     );
     // Re-derive the floor IN-PROCESS now: never trust the worker-writable recorded
-    // audit-state. The cited re-run is hashed against state Loopy just computed, so a
+    // audit-state. The cited re-run is hashed against state Superloopy just computed, so a
     // forged floor/hash cannot survive — the proof must actually reproduce here.
     const fresh = await auditOneCriterion(payload.cwd, scope, verdict.criterion);
     if (fresh === null) return false;
@@ -123,7 +123,7 @@ async function tryAcceptVerdict(payload, scope) {
 
 function extractAuditReceipt(message) {
   if (typeof message !== "string") return null;
-  const match = /LOOPY_AUDIT:\s*(\S+)/u.exec(message);
+  const match = /SUPERLOOPY_AUDIT:\s*(\S+)/u.exec(message);
   return match?.[1] ?? null;
 }
 
@@ -138,7 +138,7 @@ function auditAttemptPath(payload) {
   // so the audit attempt cap still counts instead of looping forever at "Attempt 1 of 3".
   const session = typeof payload.session_id === "string" ? sanitizeKey(payload.session_id) : "nosession";
   const agent = typeof payload.agent_id === "string" ? sanitizeKey(payload.agent_id) : "noagent";
-  return join(payload.cwd, ".loopy", "subagent-audit", `${session}-${agent}.json`);
+  return join(payload.cwd, ".superloopy", "subagent-audit", `${session}-${agent}.json`);
 }
 
 function nextAuditAttempt(payload) {

@@ -17,15 +17,15 @@ import {
 } from "../src/loop.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-loop-"));
+  return mkdtemp(join(tmpdir(), "superloopy-loop-"));
 }
 
 async function writeEvidence(repo, name, content = "proof\n") {
-  const evidenceDir = join(repo, ".loopy", "evidence");
+  const evidenceDir = join(repo, ".superloopy", "evidence");
   await mkdir(evidenceDir, { recursive: true });
   const path = join(evidenceDir, name);
   await writeFile(path, content, "utf8");
-  return `.loopy/evidence/${name}`;
+  return `.superloopy/evidence/${name}`;
 }
 
 test("createLoop creates light-mode goals with two strict evidence criteria", async () => {
@@ -38,7 +38,7 @@ test("createLoop creates light-mode goals with two strict evidence criteria", as
   assert.equal(result.plan.goals[0].criteria.length, 2);
   assert.equal(result.summary.criteria.pending, 2);
   assert.equal(result.guide.state, "start_goal");
-  assert.equal(result.guide.nextAction.command, "loopy loop next --json");
+  assert.equal(result.guide.nextAction.command, "superloopy loop next --json");
 });
 
 test("beginLoop creates a plan and starts the first goal in one command", async () => {
@@ -52,7 +52,7 @@ test("beginLoop creates a plan and starts the first goal in one command", async 
   assert.equal(result.goal.status, "in_progress");
   assert.equal(result.goal.criteria.length, 3);
   assert.equal(result.guide.state, "record_evidence");
-  assert.equal(result.guide.nextAction.command, "loopy loop prove -- <validation-command>");
+  assert.equal(result.guide.nextAction.command, "superloopy loop prove -- <validation-command>");
   assert.equal(result.summary.goals.in_progress, 1);
 });
 
@@ -65,11 +65,11 @@ test("nextLoop starts the first pending goal and records resumable status", asyn
 
   assert.equal(first.goal.status, "in_progress");
   assert.equal(first.guide.state, "record_evidence");
-  assert.equal(first.guide.nextAction.command, "loopy loop prove -- <validation-command>");
+  assert.equal(first.guide.nextAction.command, "superloopy loop prove -- <validation-command>");
   assert.equal(second.resumed, true);
   assert.equal(second.goal.id, first.goal.id);
   assert.equal(second.guide.state, "record_evidence");
-  assert.equal(second.guide.nextAction.command, "loopy loop prove -- <validation-command>");
+  assert.equal(second.guide.nextAction.command, "superloopy loop prove -- <validation-command>");
 });
 
 test("statusLoop returns the immediate guide", async () => {
@@ -80,7 +80,7 @@ test("statusLoop returns the immediate guide", async () => {
 
   assert.equal(result.summary.goals.pending, 1);
   assert.equal(result.guide.state, "start_goal");
-  assert.equal(result.guide.nextAction.command, "loopy loop next --json");
+  assert.equal(result.guide.nextAction.command, "superloopy loop next --json");
 });
 
 test("guideLoop points an idle plan at the exact next command", async () => {
@@ -90,17 +90,17 @@ test("guideLoop points an idle plan at the exact next command", async () => {
   const result = await guideLoop(repo);
 
   assert.equal(result.guide.state, "start_goal");
-  assert.equal(result.guide.nextAction.command, "loopy loop next --json");
+  assert.equal(result.guide.nextAction.command, "superloopy loop next --json");
   assert.equal(result.guide.nextAction.reason, "No goal is active.");
-  assert.equal(result.guide.evidenceRoot, ".loopy/evidence");
+  assert.equal(result.guide.evidenceRoot, ".superloopy/evidence");
   assert.equal(result.guide.unresolvedCriteria[0].status, "pending");
-  assert.equal(result.guide.unresolvedCriteria[0].suggestedArtifact, ".loopy/evidence/G001-C001.txt");
+  assert.equal(result.guide.unresolvedCriteria[0].suggestedArtifact, ".superloopy/evidence/G001-C001.txt");
 });
 
 test("guideLoop ignores legacy pending criteria without artifact fields", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship a CLI loop"]);
-  const path = join(repo, ".loopy", "goals.json");
+  const path = join(repo, ".superloopy", "goals.json");
   const plan = JSON.parse(await readFile(path, "utf8"));
   delete plan.goals[0].criteria[0].artifact;
   await writeFile(path, JSON.stringify(plan, null, 2), "utf8");
@@ -120,24 +120,24 @@ test("guideLoop points an active goal at the next evidence artifact", async () =
   assert.equal(result.guide.state, "record_evidence");
   assert.equal(result.guide.goal.id, "G001");
   assert.equal(result.guide.criterion.id, "C001");
-  assert.equal(result.guide.nextAction.command, "loopy loop prove -- <validation-command>");
-  assert.deepEqual(result.guide.proofTarget, { ref: "G001/C001", status: "pass", artifact: ".loopy/evidence/G001-C001.txt" });
-  assert.equal(result.guide.captureTemplate.command, "loopy loop capture --goal-id G001 --criterion-id C001 --notes \"<summary>\" -- <validation-command>");
-  assert.equal(result.guide.evidenceTemplate.command, "loopy loop evidence --goal-id G001 --criterion-id C001 --status pass --artifact .loopy/evidence/G001-C001.txt --notes \"<summary>\" --json");
-  assert.equal(result.guide.commands.trace, "loopy loop trace --json");
-  assert.equal(result.guide.commands.report, "loopy loop report --json");
-  assert.equal(result.guide.commands.check, "loopy loop check --json");
+  assert.equal(result.guide.nextAction.command, "superloopy loop prove -- <validation-command>");
+  assert.deepEqual(result.guide.proofTarget, { ref: "G001/C001", status: "pass", artifact: ".superloopy/evidence/G001-C001.txt" });
+  assert.equal(result.guide.captureTemplate.command, "superloopy loop capture --goal-id G001 --criterion-id C001 --notes \"<summary>\" -- <validation-command>");
+  assert.equal(result.guide.evidenceTemplate.command, "superloopy loop evidence --goal-id G001 --criterion-id C001 --status pass --artifact .superloopy/evidence/G001-C001.txt --notes \"<summary>\" --json");
+  assert.equal(result.guide.commands.trace, "superloopy loop trace --json");
+  assert.equal(result.guide.commands.report, "superloopy loop report --json");
+  assert.equal(result.guide.commands.check, "superloopy loop check --json");
   assert.deepEqual(result.guide.flow?.map((step) => [step.id, step.status, step.command]), [
-    ["start_goal", "complete", "loopy loop next --json"],
-    ["record_evidence", "current", "loopy loop prove -- <validation-command>"],
-    ["check_evidence", "anytime", "loopy loop check --json"],
-    ["finish", "pending", "loopy loop finish --evidence \"criteria passed\" --artifact .loopy/evidence/gate.json --notes \"criteria reviewed\" --json"]
+    ["start_goal", "complete", "superloopy loop next --json"],
+    ["record_evidence", "current", "superloopy loop prove -- <validation-command>"],
+    ["check_evidence", "anytime", "superloopy loop check --json"],
+    ["finish", "pending", "superloopy loop finish --evidence \"criteria passed\" --artifact .superloopy/evidence/gate.json --notes \"criteria reviewed\" --json"]
   ]);
   assert.deepEqual(result.guide.unresolvedCriteria.map((item) => item.ref), ["G001/C001", "G001/C002"]);
-  assert.equal(result.guide.unresolvedCriteria[0].suggestedArtifact, ".loopy/evidence/G001-C001.txt");
+  assert.equal(result.guide.unresolvedCriteria[0].suggestedArtifact, ".superloopy/evidence/G001-C001.txt");
   assert.deepEqual(result.guide.proofPlan.map((item) => item.ref), ["G001/C001", "G001/C002"]);
-  assert.equal(result.guide.proofPlan[0].captureCommand, "loopy loop capture --goal-id G001 --criterion-id C001 --notes \"<summary>\" -- <validation-command>");
-  assert.equal(result.guide.proofPlan[1].evidenceCommand, "loopy loop evidence --goal-id G001 --criterion-id C002 --status pass --artifact .loopy/evidence/G001-C002.txt --notes \"<summary>\" --json");
+  assert.equal(result.guide.proofPlan[0].captureCommand, "superloopy loop capture --goal-id G001 --criterion-id C001 --notes \"<summary>\" -- <validation-command>");
+  assert.equal(result.guide.proofPlan[1].evidenceCommand, "superloopy loop evidence --goal-id G001 --criterion-id C002 --status pass --artifact .superloopy/evidence/G001-C002.txt --notes \"<summary>\" --json");
 });
 
 test("guideLoop moves from finish to final checkpoint when the default gate exists", async () => {
@@ -149,11 +149,11 @@ test("guideLoop moves from finish to final checkpoint when the default gate exis
   await evidenceLoop(repo, ["--goal-id", "G001", "--criterion-id", "C002", "--status", "pass", "--artifact", c2]);
 
   const beforeReview = await guideLoop(repo);
-  await reviewLoop(repo, ["--status", "passed", "--artifact", ".loopy/evidence/gate.json", "--notes", "reviewed"]);
+  await reviewLoop(repo, ["--status", "passed", "--artifact", ".superloopy/evidence/gate.json", "--notes", "reviewed"]);
   const afterReview = await guideLoop(repo);
 
   assert.equal(beforeReview.guide.state, "finish");
-  assert.equal(beforeReview.guide.nextAction.command, "loopy loop finish --evidence \"criteria passed\" --artifact .loopy/evidence/gate.json --notes \"criteria reviewed\" --json");
+  assert.equal(beforeReview.guide.nextAction.command, "superloopy loop finish --evidence \"criteria passed\" --artifact .superloopy/evidence/gate.json --notes \"criteria reviewed\" --json");
   assert.deepEqual(beforeReview.guide.flow?.map((step) => [step.id, step.status]), [
     ["start_goal", "complete"],
     ["record_evidence", "complete"],
@@ -161,7 +161,7 @@ test("guideLoop moves from finish to final checkpoint when the default gate exis
     ["finish", "current"]
   ]);
   assert.equal(afterReview.guide.state, "final_checkpoint");
-  assert.equal(afterReview.guide.nextAction.command, "loopy loop checkpoint --goal-id G001 --status complete --evidence \"criteria passed\" --quality-gate .loopy/evidence/gate.json --json");
+  assert.equal(afterReview.guide.nextAction.command, "superloopy loop checkpoint --goal-id G001 --status complete --evidence \"criteria passed\" --quality-gate .superloopy/evidence/gate.json --json");
 });
 
 test("guideLoop uses scoped evidence roots and session flags", async () => {
@@ -171,14 +171,14 @@ test("guideLoop uses scoped evidence roots and session flags", async () => {
 
   const result = await guideLoop(repo, ["--session-id", "sess.1"]);
 
-  assert.equal(result.guide.evidenceRoot, ".loopy/sessions/sess.1/evidence");
-  assert.equal(result.guide.nextAction.command, "loopy loop prove --session-id sess.1 -- <validation-command>");
-  assert.deepEqual(result.guide.proofTarget, { ref: "G001/C001", status: "pass", artifact: ".loopy/sessions/sess.1/evidence/G001-C001.txt" });
-  assert.equal(result.guide.captureTemplate.command, "loopy loop capture --session-id sess.1 --goal-id G001 --criterion-id C001 --notes \"<summary>\" -- <validation-command>");
-  assert.equal(result.guide.evidenceTemplate.command, "loopy loop evidence --session-id sess.1 --goal-id G001 --criterion-id C001 --status pass --artifact .loopy/sessions/sess.1/evidence/G001-C001.txt --notes \"<summary>\" --json");
+  assert.equal(result.guide.evidenceRoot, ".superloopy/sessions/sess.1/evidence");
+  assert.equal(result.guide.nextAction.command, "superloopy loop prove --session-id sess.1 -- <validation-command>");
+  assert.deepEqual(result.guide.proofTarget, { ref: "G001/C001", status: "pass", artifact: ".superloopy/sessions/sess.1/evidence/G001-C001.txt" });
+  assert.equal(result.guide.captureTemplate.command, "superloopy loop capture --session-id sess.1 --goal-id G001 --criterion-id C001 --notes \"<summary>\" -- <validation-command>");
+  assert.equal(result.guide.evidenceTemplate.command, "superloopy loop evidence --session-id sess.1 --goal-id G001 --criterion-id C001 --status pass --artifact .superloopy/sessions/sess.1/evidence/G001-C001.txt --notes \"<summary>\" --json");
 });
 
-test("evidenceLoop rejects pass evidence outside .loopy/evidence", async () => {
+test("evidenceLoop rejects pass evidence outside .superloopy/evidence", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship a CLI loop"]);
   await writeFile(join(repo, "outside.txt"), "proof\n", "utf8");
@@ -194,11 +194,11 @@ test("evidenceLoop rejects pass evidence outside .loopy/evidence", async () => {
       "--artifact",
       "outside.txt"
     ]),
-    /must live under .loopy\/evidence/
+    /must live under .superloopy\/evidence/
   );
 });
 
-test("evidenceLoop records pass when artifact is non-empty under .loopy/evidence", async () => {
+test("evidenceLoop records pass when artifact is non-empty under .superloopy/evidence", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship a CLI loop"]);
   await nextLoop(repo);
@@ -221,12 +221,12 @@ test("evidenceLoop records pass when artifact is non-empty under .loopy/evidence
   assert.equal(result.criterion.artifact, artifact);
   assert.equal(result.criterion.notes, "manual smoke covered");
   assert.match(result.criterion.capturedAt, /^\d{4}-\d{2}-\d{2}T/);
-  const ledger = await readFile(join(repo, ".loopy", "ledger.jsonl"), "utf8");
+  const ledger = await readFile(join(repo, ".superloopy", "ledger.jsonl"), "utf8");
   const events = ledger.trim().split("\n").map((line) => JSON.parse(line));
   assert.equal(events.at(-1).notes, "manual smoke covered");
   assert.equal(result.guide.state, "record_evidence");
   assert.equal(result.guide.criterion.id, "C002");
-  assert.equal(result.guide.nextAction.command, "loopy loop prove -- <validation-command>");
+  assert.equal(result.guide.nextAction.command, "superloopy loop prove -- <validation-command>");
   assert.deepEqual(result.guide.recordedEvidence, [
     {
       ref: "G001/C001",
@@ -256,10 +256,10 @@ test("captureLoop records pass evidence with a command transcript", async () => 
     "-e",
     "console.log('captured ok')"
   ]);
-  const transcript = await readFile(join(repo, ".loopy", "evidence", "G001-C001-capture.txt"), "utf8");
+  const transcript = await readFile(join(repo, ".superloopy", "evidence", "G001-C001-capture.txt"), "utf8");
 
   assert.equal(result.criterion.status, "pass");
-  assert.equal(result.criterion.artifact, ".loopy/evidence/G001-C001-capture.txt");
+  assert.equal(result.criterion.artifact, ".superloopy/evidence/G001-C001-capture.txt");
   assert.equal(result.capture.exitCode, 0);
   assert.equal(result.guide.state, "record_evidence");
   assert.equal(result.guide.criterion.id, "C002");
@@ -281,10 +281,10 @@ test("captureLoop records fail evidence when the command exits nonzero", async (
     "-e",
     "console.error('captured failure'); process.exit(7)"
   ]);
-  const transcript = await readFile(join(repo, ".loopy", "evidence", "G001-C001-capture.txt"), "utf8");
+  const transcript = await readFile(join(repo, ".superloopy", "evidence", "G001-C001-capture.txt"), "utf8");
 
   assert.equal(result.criterion.status, "fail");
-  assert.equal(result.criterion.artifact, ".loopy/evidence/G001-C001-capture.txt");
+  assert.equal(result.criterion.artifact, ".superloopy/evidence/G001-C001-capture.txt");
   assert.equal(result.capture.exitCode, 7);
   assert.match(transcript, /exitCode: 7/);
   assert.match(transcript, /\[stderr\]\ncaptured failure\n/);
@@ -302,12 +302,12 @@ test("proveLoop records command evidence for the active next criterion", async (
   assert.equal(first.goal.id, "G001");
   assert.equal(first.criterion.id, "C001");
   assert.equal(first.criterion.status, "pass");
-  assert.equal(first.criterion.artifact, ".loopy/evidence/G001-C001-capture.txt");
+  assert.equal(first.criterion.artifact, ".superloopy/evidence/G001-C001-capture.txt");
   assert.equal(first.guide.state, "record_evidence");
   assert.equal(first.guide.criterion.id, "C002");
-  assert.equal(first.guide.nextAction.command, "loopy loop prove -- <validation-command>");
+  assert.equal(first.guide.nextAction.command, "superloopy loop prove -- <validation-command>");
   assert.equal(second.criterion.id, "C002");
   assert.equal(second.guide.state, "finish");
-  assert.equal(second.guide.nextAction.command, "loopy loop finish --evidence \"criteria passed\" --artifact .loopy/evidence/gate.json --notes \"criteria reviewed\" --json");
+  assert.equal(second.guide.nextAction.command, "superloopy loop finish --evidence \"criteria passed\" --artifact .superloopy/evidence/gate.json --notes \"criteria reviewed\" --json");
   assert.equal(status.summary.criteria.pass, 2);
 });

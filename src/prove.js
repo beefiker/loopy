@@ -8,7 +8,7 @@ export async function proveLoop(cwd, argv = []) {
   const scope = readScope(options);
   const plan = await readPlan(cwd, scope);
   const goal = plan.goals.find((candidate) => candidate.status === "in_progress");
-  if (goal === undefined) throw new Error("No active Loopy goal. Run `loopy loop next --json` first.");
+  if (goal === undefined) throw new Error("No active Superloopy goal. Run `superloopy loop next --json` first.");
   const criterion = goal.criteria.find((candidate) => candidate.status !== "pass");
   if (criterion === undefined) throw new Error(`Active goal ${goal.id} has no unresolved criteria.`);
 

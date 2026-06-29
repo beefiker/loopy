@@ -1,5 +1,5 @@
 {
-  "name": "loopy",
+  "name": "superloopy",
   "version": "0.1.0",
   "description": "Lightweight loop harness with strict evidence gates.",
   "author": {
@@ -16,9 +16,9 @@
     "./hooks/subagent-stop-audit.json"
   ],
   "interface": {
-    "displayName": "Loopy",
+    "displayName": "Superloopy",
     "shortDescription": "Strict evidence loop harness without heavyweight ceremony",
-    "longDescription": "Loopy provides repo-local loop state, explicit success criteria, append-only evidence ledgers, and Codex hook guardrails while keeping workflow overhead low.",
+    "longDescription": "Superloopy provides repo-local loop state, explicit success criteria, append-only evidence ledgers, and Codex hook guardrails while keeping workflow overhead low.",
     "category": "Developer Tools",
     "capabilities": [
       "Hooks",
@@ -26,10 +26,10 @@
       "Context Injection"
     ],
     "defaultPrompt": [
-      "Use loopy loop begin for new tasks.",
-      "After hook approval, Loopy bootstraps the CLI wrapper and bundled custom agents on SessionStart.",
-      "Run loopy loop guide --json before choosing the next Loopy command.",
-      "Record Loopy evidence for this change, using loopy loop prove when command output is the proof."
+      "Use superloopy loop begin for new tasks.",
+      "After hook approval, Superloopy bootstraps the CLI wrapper and bundled custom agents on SessionStart.",
+      "Run superloopy loop guide --json before choosing the next Superloopy command.",
+      "Record Superloopy evidence for this change, using superloopy loop prove when command output is the proof."
     ],
     "brandColor": "#2563EB",
     "screenshots": []

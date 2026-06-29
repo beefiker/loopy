@@ -3,12 +3,12 @@
 // `loopy team`/`loopy crew`, the connected one-word `loopycrew`, or the
 // standalone `ultrawork` escalate the same operator into crew fan-out mode: it
 // is steered to delegate independent slices to parallel workers via the host's
-// native spawn tool, while the Loopy plan and its evidence gates stay the
+// native spawn tool, while the Superloopy plan and its evidence gates stay the
 // single source of truth. This module stays dependency-free; the hook runtime
 // injects the helpers it needs.
 
 const ENGINEER_TRIGGER_PATTERN = /^\s*@?loopy\b[ \t:,]*/iu;
-// Suppress only an actual `loopy loop <subcommand>` CLI reference (or a bare `loopy loop`),
+// Suppress only a prompt-shaped `loopy loop <subcommand>` command reference (or a bare `loopy loop`),
 // NOT any task that merely starts with the word "loop" — e.g. "loopy loop over the array"
 // is a real task and must still wake the engineer.
 const CLI_REFERENCE_PATTERN = /^loop(\s+(begin|create|next|guide|trace|report|check|evidence|capture|prove|review|checkpoint|finish|status|audit|fleet|handoff)\b|\s*$)/iu;
@@ -21,7 +21,7 @@ const CONNECTED_CREW_TRIGGER_PATTERN = /^\s*@?loopycrew\b[ \t:,]*/iu;
 // Standalone escalation keyword: `ultrawork <task>` wakes the engineer straight into
 // crew fan-out, with no `loopy` prefix. Leading-only and boundary-guarded.
 const ULTRAWORK_TRIGGER_PATTERN = /^\s*@?ultrawork\b[ \t:,]*/iu;
-const HEADER = "Loopy loop engineer";
+const HEADER = "Superloopy loop engineer";
 
 export function hasEngineerTrigger(prompt) {
   if (typeof prompt !== "string") return false;
@@ -60,7 +60,7 @@ export function parseInvocation(prompt) {
 }
 
 export async function runEngineerTriggerHook(payload, deps) {
-  const { statusForPayload, guideForPayload, renderLoopyContext, formatAdditionalContext } = deps;
+  const { statusForPayload, guideForPayload, renderSuperloopyContext, formatAdditionalContext } = deps;
   const { orchestrate } = parseInvocation(payload.prompt);
   try {
     const status = await statusForPayload(payload);
@@ -68,7 +68,7 @@ export async function runEngineerTriggerHook(payload, deps) {
       return formatAdditionalContext("UserPromptSubmit", renderComplete(status));
     }
     const guide = guideForPayload(payload, status.plan);
-    return formatAdditionalContext("UserPromptSubmit", renderResume(renderLoopyContext(status, guide), orchestrate));
+    return formatAdditionalContext("UserPromptSubmit", renderResume(renderSuperloopyContext(status, guide), orchestrate));
   } catch {
     return formatAdditionalContext("UserPromptSubmit", renderStart(payload, orchestrate));
   }
@@ -85,10 +85,10 @@ function renderStart(payload, orchestrate) {
         : "The user woke the loop engineer with `loopy` but named no task.",
       "Ask in one short question what they want built or fixed, then drive the loop yourself:",
       "",
-      "- Start: `loopy loop begin --brief \"<their answer>\" --mode light --json`.",
-      "- Follow `loopy loop guide --json` for each next command; do not ask the user to run Loopy.",
-      "- Prove every criterion with `loopy loop prove -- <validation-command>` (real artifacts only).",
-      "- Preflight `loopy loop check`, then `loopy loop finish --evidence \"<summary>\" --artifact .loopy/evidence/gate.json --json`.",
+      "- Start: `superloopy loop begin --brief \"<their answer>\" --mode light --json`.",
+      "- Follow `superloopy loop guide --json` for each next command; do not ask the user to run Superloopy.",
+      "- Prove every criterion with `superloopy loop prove -- <validation-command>` (real artifacts only).",
+      "- Preflight `superloopy loop check`, then `superloopy loop finish --evidence \"<summary>\" --artifact .superloopy/evidence/gate.json --json`.",
       ...(orchestrate ? ["", ...orchestrationLines()] : [])
     ].join("\n");
   }
@@ -96,14 +96,14 @@ function renderStart(payload, orchestrate) {
     HEADER,
     "",
     orchestrate
-      ? "The user woke the loop engineer in crew mode with `loopy team`. Own the whole evidence loop and delegate independent slices to the crew; do not ask the user to run Loopy commands."
-      : "The user woke the loop engineer with `loopy`. Own the whole evidence loop; do not ask the user to run Loopy commands.",
+      ? "The user woke the loop engineer in crew mode with `loopy team`. Own the whole evidence loop and delegate independent slices to the crew; do not ask the user to run Superloopy commands."
+      : "The user woke the loop engineer with `loopy`. Own the whole evidence loop; do not ask the user to run Superloopy commands.",
     "",
     `- Brief: ${brief}`,
-    `- Start now: \`loopy loop begin --brief ${shellQuote(brief)} --mode light --json\`.`,
-    "- Drive each step with `loopy loop guide --json` and act on its next command.",
-    "- Prove every criterion with `loopy loop prove -- <validation-command>`; record real artifacts only.",
-    "- Preflight with `loopy loop check`, then complete with `loopy loop finish --evidence \"<summary>\" --artifact .loopy/evidence/gate.json --json`.",
+    `- Start now: \`superloopy loop begin --brief ${shellQuote(brief)} --mode light --json\`.`,
+    "- Drive each step with `superloopy loop guide --json` and act on its next command.",
+    "- Prove every criterion with `superloopy loop prove -- <validation-command>`; record real artifacts only.",
+    "- Preflight with `superloopy loop check`, then complete with `superloopy loop finish --evidence \"<summary>\" --artifact .superloopy/evidence/gate.json --json`.",
     "- Report progress in plain terms (criteria proven, next step), not raw command dumps.",
     "- Keep it light unless the task needs heavier review. The Stop hook blocks completion until evidence exists.",
     "",
@@ -115,7 +115,7 @@ function renderResume(context, orchestrate) {
   return [
     HEADER,
     "",
-    "A loop is already in progress. Resume as the loop engineer and run the next action yourself; do not start a second plan or ask the user to run Loopy commands.",
+    "A loop is already in progress. Resume as the loop engineer and run the next action yourself; do not start a second plan or ask the user to run Superloopy commands.",
     ...(orchestrate
       ? ["", "You opened this with `loopy team`: keep delegating independent slices to the crew via `multi_agent_v1.spawn_agent`, and record only artifact-backed proof.", "", ...orchestrationLines()]
       : []),
@@ -129,9 +129,9 @@ function renderComplete(status) {
   return [
     HEADER,
     "",
-    "The current Loopy aggregate is already complete.",
+    "The current Superloopy aggregate is already complete.",
     "",
-    `- Inspect: \`loopy loop status${session} --json\`.`,
+    `- Inspect: \`superloopy loop status${session} --json\`.`,
     "- For new work, begin a fresh loop and keep it separate with a new --session-id."
   ].join("\n");
 }
@@ -142,7 +142,7 @@ function baselineDelegationLine() {
   return "- If the work splits into 2+ genuinely independent slices, you may delegate them in parallel with `multi_agent_v1.spawn_agent` (set `agent_type` to the matching crew role, self-contained `message`, `fork_context: false`) and record each worker's artifact-backed proof; for a single cohesive change, stay solo. Type `loopy team <task>` to run the full crew.";
 }
 
-// Tier 2 (escalation): the crew fan-out playbook, wired to Loopy's receipt gate.
+// Tier 2 (escalation): the crew fan-out playbook, wired to Superloopy's receipt gate.
 function orchestrationLines() {
   return [
     "Crew fan-out (team mode):",
@@ -153,12 +153,12 @@ function orchestrationLines() {
     "- Role routing by name is best-effort across hosts, so ALSO make the `message` self-contained: lead with `TASK: act as <role>` and paste all needed context, so the worker behaves correctly even if the host ignores `agent_type`.",
     "- The implementation worker must own a real bounded implementation slice before the parent edits or completes that slice. If no safe independent implementation slice exists, stay solo or use a smaller read-only crew.",
     "- Parallelize read-heavy lanes first (`nami` navigation, `zoro` review, `usopp` QA); never run two editors on overlapping files at once.",
-    "- Each worker ends its report with `LOOPY_EVIDENCE: <path-under-active-evidence-root>` (`robin` uses `LOOPY_AUDIT:`). Collect them with `multi_agent_v1.wait_agent`; treat a running child as alive, not a timeout.",
+    "- Each worker ends its report with `SUPERLOOPY_EVIDENCE: <path-under-active-evidence-root>` (`robin` uses `SUPERLOOPY_AUDIT:`). Collect them with `multi_agent_v1.wait_agent`; treat a running child as alive, not a timeout.",
     "- After each worker returns, show a concise role completion line with role, normalized verdict, artifact path, risk, and next action before closing or respawning that lane.",
-    "- Give `jinbe` a Markdown final gate report such as `.loopy/evidence/jinbe-final-gate-report.md`; keep it separate from the machine quality gate `.loopy/evidence/gate.json`.",
-    "- You own the plan: record a criterion pass only from a real artifact via `loopy loop prove` or `loopy loop evidence`, never from a worker's claim alone. Track each dispatch with `loopy loop handoff` and run `loopy loop fleet --json` before the final gate.",
+    "- Give `jinbe` a Markdown final gate report such as `.superloopy/evidence/jinbe-final-gate-report.md`; keep it separate from the machine quality gate `.superloopy/evidence/gate.json`.",
+    "- You own the plan: record a criterion pass only from a real artifact via `superloopy loop prove` or `superloopy loop evidence`, never from a worker's claim alone. Track each dispatch with `superloopy loop handoff` and run `superloopy loop fleet --json` before the final gate.",
     "- Before the final summary, run `git status --short --untracked-files=all` and `git ls-files --others --exclude-standard` so untracked evidence, scripts, and reports are not omitted.",
-    "- Keep the Loopy loop the source of truth: you still begin, prove, check, and finish through the CLI yourself with `loopy loop finish --evidence \"<summary>\" --artifact .loopy/evidence/gate.json --json`."
+    "- Keep the Superloopy loop the source of truth: you still begin, prove, check, and finish through the CLI yourself with `superloopy loop finish --evidence \"<summary>\" --artifact .superloopy/evidence/gate.json --json`."
   ];
 }
 

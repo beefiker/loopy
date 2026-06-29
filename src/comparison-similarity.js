@@ -6,7 +6,7 @@ import { join } from "node:path";
 const POLICY = "optional-local-comparison-similarity-scan";
 const MIN_SHARED_BLOCK_LINES = 8;
 const MAX_FINDINGS = 25;
-const SKIPPED_DIRS = new Set([".git", ".loopy", "coverage", "dist", "node_modules", "vendor"]);
+const SKIPPED_DIRS = new Set([".git", ".superloopy", "coverage", "dist", "node_modules", "vendor"]);
 const COMPARISON_CODE_EXTENSIONS = /\.(cjs|js|json|mjs|py|rb|rs|sh|ts|tsx|ya?ml)$/u;
 
 export async function checkComparisonSimilarity(cwd, options = {}) {
@@ -39,7 +39,7 @@ export async function checkComparisonSimilarity(cwd, options = {}) {
     return fail(`Local reference checkouts are stale: ${stale.map((source) => source.name).join(", ")}.`, sources);
   }
 
-  const loopyFiles = options.listFiles(cwd).filter(isLoopyCodeFile);
+  const loopyFiles = options.listFiles(cwd).filter(isSuperloopyCodeFile);
   const comparisonBlocks = await buildComparisonBlockIndex(activeSources);
   const findings = await findCopiedBlocks(cwd, loopyFiles, comparisonBlocks);
   const checkedComparisonFiles = activeSources.reduce((total, source) => total + source.files, 0);
@@ -194,7 +194,7 @@ function normalizeLine(raw) {
   return normalized.length < 18 ? null : normalized;
 }
 
-function isLoopyCodeFile(file) {
+function isSuperloopyCodeFile(file) {
   return (file.startsWith("src/") && file.endsWith(".js"))
     || (file.startsWith("hooks/") && file.endsWith(".json"))
     || file === ".codex-plugin/plugin.json"

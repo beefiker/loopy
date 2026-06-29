@@ -1,25 +1,25 @@
 ---
-name: loopy-research
-description: Use for explicit Loopy research or deep research requests that need exhaustive Loopy-style investigation across code, web, official docs, and repositories. Triggers on "loopy research", "deep research", "exhaustive research", "ultra-precise investigation", or requests for a cited research report. Do not self-activate for ordinary debugging or implementation context gathering.
+name: superloopy-research
+description: Use for explicit Superloopy research or deep research requests that need exhaustive Superloopy-style investigation across code, web, official docs, and repositories. Triggers on "loopy research", "deep research", "exhaustive research", "ultra-precise investigation", or requests for a cited research report. Do not self-activate for ordinary debugging or implementation context gathering.
 ---
 
-# Loopy Research
+# Superloopy Research
 
-Run exhaustive research with Loopy evidence. The goal is not quick context gathering; it is a cited, auditable answer whose claims can be traced to sources or verification artifacts.
+Run exhaustive research with Superloopy evidence. The goal is not quick context gathering; it is a cited, auditable answer whose claims can be traced to sources or verification artifacts.
 
 ## Activation
 
-Start with `LOOPY RESEARCH ENABLED` when the user explicitly asks for loopy research, deep research, exhaustive research, or a research report. If another active Loopy mode has a required opening line, print that first and this marker next.
+Start with `SUPERLOOPY RESEARCH ENABLED` when the user explicitly asks for loopy research, deep research, exhaustive research, or a research report. If another active Superloopy mode has a required opening line, print that first and this marker next.
 
-Use the active Loopy plan when one exists. For a new substantial research task, create one with `loopy loop begin`, then record artifacts under `.loopy/evidence/research/<slug>/`.
+Use the active Superloopy plan when one exists. For a new substantial research task, create one with `superloopy loop begin`, then record artifacts under `.superloopy/evidence/research/<slug>/`.
 
 ## Evidence Contract
 
 - The orchestrator owns files. Workers return findings and EXPAND leads in message text; do not ask workers to write session files.
-- Keep a session directory under `.loopy/evidence/research/<timestamp>-<slug>/`.
+- Keep a session directory under `.superloopy/evidence/research/<timestamp>-<slug>/`.
 - Maintain `expansion-log.md`, one `wave-<n>-<axis>.md` file per worker return, optional `verify-<slug>.md` files, `claim-ledger.md`, and `SYNTHESIS.md`.
-- End the completed research with a Loopy artifact record, for example `loopy loop evidence --status pass --artifact .loopy/evidence/research/<slug>/SYNTHESIS.md --notes "<summary>"`.
-- When a worker is assigned a report artifact, require its final line to be `LOOPY_EVIDENCE: <path-under-active-evidence-root>`.
+- End the completed research with a Superloopy artifact record, for example `superloopy loop evidence --status pass --artifact .superloopy/evidence/research/<slug>/SYNTHESIS.md --notes "<summary>"`.
+- When a worker is assigned a report artifact, require its final line to be `SUPERLOOPY_EVIDENCE: <path-under-active-evidence-root>`.
 
 ## Phase 0 - Scope
 
@@ -104,4 +104,4 @@ Keep direct quotes short and attributed. Do not copy long passages from sources.
 - Every EXPAND lead is investigated, duplicated, or closed as dead.
 - Every high-risk claim is verified, unresolved, or omitted.
 - `SYNTHESIS.md` exists and every substantive claim has a citation or verification artifact.
-- The final Loopy evidence record points to the synthesis.
+- The final Superloopy evidence record points to the synthesis.

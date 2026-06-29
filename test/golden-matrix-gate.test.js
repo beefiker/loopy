@@ -53,7 +53,7 @@ test("golden: checkpoint accepts matrix quality gate", async () => {
   runCli(["loop", "evidence", "--goal-id", "G001", "--criterion-id", "C002", "--status", "pass", "--artifact", c2], {
     cwd: repo
   });
-  const gatePath = join(repo, ".loopy", "evidence", "matrix-gate.json");
+  const gatePath = join(repo, ".superloopy", "evidence", "matrix-gate.json");
   const gate = matrixStyleQualityGate(await writeMatrixGateArtifacts(repo));
   gate.executorQa.surfaceEvidence[0].surface = ["t", "m", "u", "x"].join("");
   // Completion-time provenance re-derives every cited audit verdict, so the gate must
@@ -71,7 +71,7 @@ test("golden: checkpoint accepts matrix quality gate", async () => {
     "--evidence",
     "done",
     "--quality-gate",
-    ".loopy/evidence/matrix-gate.json",
+    ".superloopy/evidence/matrix-gate.json",
     "--json"
   ], { cwd: repo });
 
@@ -99,7 +99,7 @@ test("golden: matrix quality gate rejects inline-only executor QA proof", async 
     description: "Inline-only proof is not enough.",
     inlineEvidence: "The CLI allegedly passed."
   };
-  await writeFile(join(repo, ".loopy", "evidence", "inline-only-gate.json"), JSON.stringify(gate), "utf8");
+  await writeFile(join(repo, ".superloopy", "evidence", "inline-only-gate.json"), JSON.stringify(gate), "utf8");
 
   const result = runCli([
     "loop",
@@ -111,7 +111,7 @@ test("golden: matrix quality gate rejects inline-only executor QA proof", async 
     "--evidence",
     "done",
     "--quality-gate",
-    ".loopy/evidence/inline-only-gate.json"
+    ".superloopy/evidence/inline-only-gate.json"
   ], { cwd: repo });
 
   assert.equal(result.status, 1);
@@ -131,7 +131,7 @@ test("golden: matrix quality gate rejects not-applicable adversarial cases", asy
   });
   const gate = cloneJson(matrixStyleQualityGate(await writeMatrixGateArtifacts(repo)));
   gate.executorQa.adversarialCases[0].status = "not_applicable";
-  await writeFile(join(repo, ".loopy", "evidence", "na-adversarial-gate.json"), JSON.stringify(gate), "utf8");
+  await writeFile(join(repo, ".superloopy", "evidence", "na-adversarial-gate.json"), JSON.stringify(gate), "utf8");
 
   const result = runCli([
     "loop",
@@ -143,7 +143,7 @@ test("golden: matrix quality gate rejects not-applicable adversarial cases", asy
     "--evidence",
     "done",
     "--quality-gate",
-    ".loopy/evidence/na-adversarial-gate.json"
+    ".superloopy/evidence/na-adversarial-gate.json"
   ], { cwd: repo });
 
   assert.equal(result.status, 1);

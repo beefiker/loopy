@@ -20,8 +20,8 @@ export async function checkFileAudit(cwd, options) {
     });
     const missingPolicy = [];
     if (!/does not vendor/u.test(audit)) missingPolicy.push("vendor-boundary");
-    if (!/Original Loopy role/u.test(audit)) missingPolicy.push("original-role");
-    if (!/Loopy-native boundary/u.test(audit)) missingPolicy.push("native-boundary");
+    if (!/Original Superloopy role/u.test(audit)) missingPolicy.push("original-role");
+    if (!/Superloopy-native boundary/u.test(audit)) missingPolicy.push("native-boundary");
     if (missing.length > 0) return fail(`File audit missing entries: ${missing.join(", ")}.`);
     if (missingRows.length > 0) return fileAuditFail(`File audit missing inventory rows: ${missingRows.join(", ")}.`, options, files, rows, missing, missingRows, incompleteRows, staleRows);
     if (staleRows.length > 0) return fileAuditFail(`File audit rows without Git-visible files: ${staleRows.join(", ")}.`, options, files, rows, missing, missingRows, incompleteRows, staleRows);
@@ -43,7 +43,7 @@ function fileAuditPass(options, files, rows, missing, missingRows, incompleteRow
     missingRows,
     incompleteRows,
     staleRows,
-    policy: options.policy ?? "loopy-native-boundary"
+    policy: options.policy ?? "superloopy-native-boundary"
   };
 }
 

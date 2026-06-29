@@ -31,7 +31,7 @@ export async function traceLoop(cwd, argv = []) {
 
 export function formatTraceResult(result) {
   const lines = [
-    "Loopy trace",
+    "Superloopy trace",
     "",
     `Evidence root: \`${result.paths.evidence}\``,
     `Progress: ${result.summary.goals.complete}/${result.summary.goals.total} goals, ${result.summary.criteria.pass}/${result.summary.criteria.total} criteria`,

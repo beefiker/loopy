@@ -1,5 +1,5 @@
 interface:
-  display_name: "Loopy Loop"
+  display_name: "Superloopy Loop"
   short_description: "Lightweight strict-evidence loop harness"
   search_terms:
     - "loopy"
@@ -10,4 +10,4 @@ interface:
     - "guide"
     - "quality-gate"
     - "proof"
-  default_prompt: "Use loopy-loop to run this task with durable criteria, guided next actions, and evidence-backed completion."
+  default_prompt: "Use superloopy-loop to run this task with durable criteria, guided next actions, and evidence-backed completion."

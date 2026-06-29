@@ -1,5 +1,5 @@
 // SubagentStop evidence-receipt attempt tracking plus the post-cap ledger signal, factored
-// out of hooks.js so each file stays within Loopy's per-file reviewability budget. The 3-attempt
+// out of hooks.js so each file stays within Superloopy's per-file reviewability budget. The 3-attempt
 // cap nudges a worker to produce a valid receipt; on exhaustion the hook allows the stop (a free
 // pass that never confers a criterion pass) and records a ledger signal so it is observable.
 
@@ -62,7 +62,7 @@ function attemptStatePath(payload) {
   // id-less workers in one session then share a counter — acceptable versus an infinite block.
   const session = typeof payload.session_id === "string" ? sanitizeKey(payload.session_id) : "nosession";
   const agent = typeof payload.agent_id === "string" ? sanitizeKey(payload.agent_id) : "noagent";
-  return join(payload.cwd, ".loopy", "subagent-stop", `${session}-${agent}.json`);
+  return join(payload.cwd, ".superloopy", "subagent-stop", `${session}-${agent}.json`);
 }
 
 function scopeFromPayload(payload) {

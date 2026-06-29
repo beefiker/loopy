@@ -1,11 +1,11 @@
 {
   "name": "beefiker",
   "interface": {
-    "displayName": "Loopy"
+    "displayName": "Superloopy"
   },
   "plugins": [
     {
-      "name": "loopy",
+      "name": "superloopy",
       "source": {
         "source": "local",
         "path": "./"

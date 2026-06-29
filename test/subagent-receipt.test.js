@@ -7,7 +7,7 @@ import test from "node:test";
 import { runSubagentStopHook } from "../src/hooks.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-receipt-"));
+  return mkdtemp(join(tmpdir(), "superloopy-receipt-"));
 }
 
 test("runSubagentStopHook blocks franky without receipt", async () => {
@@ -23,14 +23,14 @@ test("runSubagentStopHook blocks franky without receipt", async () => {
 
   const parsed = JSON.parse(output);
   assert.equal(parsed.decision, "block");
-  assert.match(parsed.reason, /LOOPY_EVIDENCE/);
+  assert.match(parsed.reason, /SUPERLOOPY_EVIDENCE/);
   assert.match(parsed.reason, /active evidence root/);
   assert.match(parsed.reason, /EVIDENCE_RECORDED: <path-under-active-evidence-root>/);
 });
 
 test("runSubagentStopHook blocks a blank (whitespace-only) artifact receipt", async () => {
   const repo = await tempRepo();
-  const evidenceDir = join(repo, ".loopy", "evidence");
+  const evidenceDir = join(repo, ".superloopy", "evidence");
   await mkdir(evidenceDir, { recursive: true });
   await writeFile(join(evidenceDir, "blank.txt"), "   \n\t\n", "utf8");
 
@@ -38,7 +38,7 @@ test("runSubagentStopHook blocks a blank (whitespace-only) artifact receipt", as
     hook_event_name: "SubagentStop",
     agent_type: "franky",
     cwd: repo,
-    last_assistant_message: "LOOPY_EVIDENCE: .loopy/evidence/blank.txt"
+    last_assistant_message: "SUPERLOOPY_EVIDENCE: .superloopy/evidence/blank.txt"
   });
 
   // A non-empty-but-blank placeholder must not satisfy the gate.
@@ -75,6 +75,6 @@ test("runSubagentStopHook records a ledger signal when the attempt cap is exhaus
   runSubagentStopHook(payload);
   runSubagentStopHook(payload);
   assert.equal(runSubagentStopHook(payload), "");
-  const ledger = await readFile(join(repo, ".loopy", "ledger.jsonl"), "utf8");
+  const ledger = await readFile(join(repo, ".superloopy", "ledger.jsonl"), "utf8");
   assert.match(ledger, /subagent_attempt_exhausted/);
 });

@@ -8,11 +8,11 @@ import test from "node:test";
 import { crewLineForHandoff, decorateHandoffWithCrewLine, detectCrewLineLanguage, formatCrewLine, SUPPORTED_CREW_LINE_LANGUAGES } from "../src/crew-lines.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-crew-lines-"));
+  return mkdtemp(join(tmpdir(), "superloopy-crew-lines-"));
 }
 
 async function writeEvidence(repo, name, content = "proof\n", sessionId = null) {
-  const relativeDir = sessionId === null ? join(".loopy", "evidence") : join(".loopy", "sessions", sessionId, "evidence");
+  const relativeDir = sessionId === null ? join(".superloopy", "evidence") : join(".superloopy", "sessions", sessionId, "evidence");
   const evidenceDir = join(repo, relativeDir);
   await mkdir(evidenceDir, { recursive: true });
   const path = join(evidenceDir, name);
@@ -113,7 +113,7 @@ test("CLI handoff text shows the crew line without hiding status", async () => {
   ], { cwd: repo });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /^Usopp: "Target checked\. The test passed\."\nloopy handoff: H001 usopp -> done \[accept\]\n$/);
+  assert.match(result.stdout, /^Usopp: "Target checked\. The test passed\."\nsuperloopy handoff: H001 usopp -> done \[accept\]\n$/);
 });
 
 test("CLI handoff text can use an explicit supported language override", async () => {
@@ -138,7 +138,7 @@ test("CLI handoff text can use an explicit supported language override", async (
   ], { cwd: repo });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /^Usopp: "Objetivo confirmado\. La prueba pasó\."\nloopy handoff: H001 usopp -> done \[accept\]\n$/);
+  assert.match(result.stdout, /^Usopp: "Objetivo confirmado\. La prueba pasó\."\nsuperloopy handoff: H001 usopp -> done \[accept\]\n$/);
 });
 
 test("CLI handoff text follows Korean session brief language", async () => {
@@ -173,5 +173,5 @@ test("CLI handoff text follows Korean session brief language", async () => {
   ], { cwd: repo });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /^우솝: "표적 확인\. 테스트는 통과했다\."\nloopy handoff: H001 usopp -> done \[accept\]\n$/);
+  assert.match(result.stdout, /^우솝: "표적 확인\. 테스트는 통과했다\."\nsuperloopy handoff: H001 usopp -> done \[accept\]\n$/);
 });

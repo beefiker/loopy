@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const AUDIT_PATH = "docs/loopy-file-audit.md";
+const AUDIT_PATH = "docs/superloopy-file-audit.md";
 const MAX_REVIEWABLE_LINES = 500;
 
 test("file audit covers every repository file and reference boundary", async () => {
@@ -14,8 +14,8 @@ test("file audit covers every repository file and reference boundary", async () 
 
   assert.deepEqual(missing, []);
   assert.match(audit, /does not vendor/u);
-  assert.match(audit, /Original Loopy role/u);
-  assert.match(audit, /Loopy-native boundary/u);
+  assert.match(audit, /Original Superloopy role/u);
+  assert.match(audit, /Superloopy-native boundary/u);
 });
 
 test("source and test files stay small enough to review file by file", async () => {

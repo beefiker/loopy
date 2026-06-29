@@ -1,6 +1,6 @@
-# Loopy Model Policy
+# Superloopy Model Policy
 
-Loopy's bundled agent model fields are steering, not proof. They give the host sensible defaults for cost and depth, but completion authority still comes from Loopy artifacts, `loop check`, and the quality gate.
+Superloopy's bundled agent model fields are steering, not proof. They give the host sensible defaults for cost and depth, but completion authority still comes from Superloopy artifacts, `loop check`, and the quality gate.
 
 ## Allowed Fields
 
@@ -32,4 +32,4 @@ Allowed service tiers: `priority`, `fast`, `efficient`.
 - Do not treat a stronger model as proof. The artifact, command transcript, audit verdict, or gate report is the proof.
 - Prefer smaller or faster defaults only for read-only navigation and other low-risk lookup work.
 - Review and final-gate lanes get deeper effort because they judge other evidence.
-- `loopy doctor --json` checks this document and every bundled agent TOML for drift.
+- `superloopy doctor --json` checks this document and every bundled agent TOML for drift.

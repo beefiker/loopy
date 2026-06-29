@@ -18,7 +18,7 @@ function runCli(args, options = {}) {
 }
 
 async function tempRepoCopy() {
-  const repo = await mkdtemp(join(tmpdir(), "loopy-doctor-"));
+  const repo = await mkdtemp(join(tmpdir(), "superloopy-doctor-"));
   const result = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], {
     cwd: process.cwd(),
     encoding: "utf8"
@@ -36,7 +36,7 @@ async function tempRepoCopy() {
 }
 
 async function tempComparisonTree(files) {
-  const repo = await mkdtemp(join(tmpdir(), "loopy-comparison-"));
+  const repo = await mkdtemp(join(tmpdir(), "superloopy-comparison-"));
   for (const [file, content] of Object.entries(files)) {
     const target = join(repo, file);
     await mkdir(dirname(target), { recursive: true });
@@ -45,7 +45,7 @@ async function tempComparisonTree(files) {
   return repo;
 }
 
-test("doctor --json reports Loopy packaging, audit, and reviewability checks", () => {
+test("doctor --json reports Superloopy packaging, audit, and reviewability checks", () => {
   const result = runCli(["doctor", "--json"]);
 
   assert.equal(result.status, 0, result.stderr);
@@ -76,15 +76,15 @@ test("doctor --json reports Loopy packaging, audit, and reviewability checks", (
   assert.equal(parsed.checks.runtimeBoundary.ok, true);
   assert.equal(parsed.checks.runtimeBoundary.policy, "runtime-state-is-ignored-and-untracked");
   assert.equal(parsed.checks.fileAudit.ok, true);
-  assert.equal(parsed.checks.fileAudit.auditPath, "docs/loopy-file-audit.md");
-  assert.equal(parsed.checks.fileAudit.policy, "loopy-native-boundary");
+  assert.equal(parsed.checks.fileAudit.auditPath, "docs/superloopy-file-audit.md");
+  assert.equal(parsed.checks.fileAudit.policy, "superloopy-native-boundary");
   assert.deepEqual(parsed.checks.fileAudit.missingRows, []);
   assert.deepEqual(parsed.checks.fileAudit.incompleteRows, []);
   assert.deepEqual(parsed.checks.fileAudit.staleRows, []);
   assert.equal(parsed.checks.gateNotes.ok, true);
-  assert.equal(parsed.checks.gateNotes.notesPath, "docs/loopy-gate-notes.md");
+  assert.equal(parsed.checks.gateNotes.notesPath, "docs/superloopy-gate-notes.md");
   assert.equal(parsed.checks.designAudit.ok, true);
-  assert.equal(parsed.checks.designAudit.auditPath, "docs/loopy-design-audit.md");
+  assert.equal(parsed.checks.designAudit.auditPath, "docs/superloopy-design-audit.md");
   assert.equal(parsed.checks.comparisonSimilarity.ok, true);
   assert.equal(parsed.checks.comparisonSimilarity.checked, false);
   assert.equal(parsed.checks.comparisonSimilarity.policy, "optional-local-comparison-similarity-scan");
@@ -94,7 +94,7 @@ test("doctor --json reports Loopy packaging, audit, and reviewability checks", (
   assert.equal(parsed.checks.dispatchCoherence.ok, true);
   assert.ok(parsed.checks.dispatchCoherence.dispatched.includes("robin"));
   assert.equal(parsed.checks.modelPolicy.ok, true);
-  assert.equal(parsed.checks.modelPolicy.policyPath, "docs/loopy-model-policy.md");
+  assert.equal(parsed.checks.modelPolicy.policyPath, "docs/superloopy-model-policy.md");
   assert.equal(parsed.checks.modelPolicy.agents.nami.model, "gpt-5.4-mini");
   assert.equal(parsed.checks.modelPolicy.agents.zoro.model_reasoning_effort, "xhigh");
   assert.equal(parsed.checks.hostContract.ok, true);
@@ -170,7 +170,7 @@ test("doctor comparison scan fails on copied-looking blocks", async () => {
 
 test("doctor file audit fails when an inventory row loses boundary evidence", async () => {
   const repo = await tempRepoCopy();
-  const auditPath = join(repo, "docs", "loopy-file-audit.md");
+  const auditPath = join(repo, "docs", "superloopy-file-audit.md");
   const audit = await readFile(auditPath, "utf8");
   await writeFile(
     auditPath,
@@ -190,13 +190,13 @@ test("doctor file audit fails when an inventory row loses boundary evidence", as
 
 test("doctor file audit fails when an inventory row points at a deleted file", async () => {
   const repo = await tempRepoCopy();
-  const auditPath = join(repo, "docs", "loopy-file-audit.md");
+  const auditPath = join(repo, "docs", "superloopy-file-audit.md");
   const audit = await readFile(auditPath, "utf8");
   await writeFile(
     auditPath,
     audit.replace(
-      "| File | Original Loopy role | Compatibility boundary |\n",
-      "| File | Original Loopy role | Compatibility boundary |\n| `docs/deleted.md` | Dead row. | No live file. |\n"
+      "| File | Original Superloopy role | Compatibility boundary |\n",
+      "| File | Original Superloopy role | Compatibility boundary |\n| `docs/deleted.md` | Dead row. | No live file. |\n"
     ),
     "utf8"
   );
@@ -210,13 +210,13 @@ test("doctor file audit fails when an inventory row points at a deleted file", a
 
 test("doctor design audit fails when a decision row loses guard evidence", async () => {
   const repo = await tempRepoCopy();
-  const auditPath = join(repo, "docs", "loopy-design-audit.md");
+  const auditPath = join(repo, "docs", "superloopy-design-audit.md");
   const audit = await readFile(auditPath, "utf8");
   await writeFile(
     auditPath,
     audit.replace(
       /\| `native-naming` \| [^\n]+/u,
-      "| `native-naming` | Names must describe Loopy behavior. | File and test names changed. | |"
+      "| `native-naming` | Names must describe Superloopy behavior. | File and test names changed. | |"
     ),
     "utf8"
   );
@@ -234,5 +234,5 @@ test("doctor text reports checked comparison scanning", async () => {
   const output = formatDoctor(result);
 
   assert.equal(result.ok, true);
-  assert.match(output, /comparisonSimilarity: ok - checked; \d+ Loopy files against 1 comparison files/);
+  assert.match(output, /comparisonSimilarity: ok - checked; \d+ Superloopy files against 1 comparison files/);
 });

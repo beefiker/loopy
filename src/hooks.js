@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { bootstrapHasUserSignal, bootstrapLoopy, formatBootstrapHookContext } from "./agents.js";
+import { bootstrapHasUserSignal, bootstrapSuperloopy, formatBootstrapHookContext } from "./agents.js";
 import { parseJson } from "./args.js";
 import { resolveEvidenceArtifact } from "./artifacts.js";
 import { buildGuide } from "./guide.js";
@@ -58,11 +58,11 @@ export function runSubagentStopHook(payload) {
   return `${JSON.stringify({
     decision: "block",
     reason: [
-      "Loopy evidence receipt missing or invalid.",
+      "Superloopy evidence receipt missing or invalid.",
       `Attempt ${attemptState.attempts} of ${MAX_SUBAGENT_ATTEMPTS}.`,
       `Run the relevant validation, write a non-empty artifact under the active evidence root: \`${evidenceRoot}\`.`,
       "End with:",
-      "LOOPY_EVIDENCE: <path-under-active-evidence-root>",
+      "SUPERLOOPY_EVIDENCE: <path-under-active-evidence-root>",
       "EVIDENCE_RECORDED: <path-under-active-evidence-root> is accepted for compatibility."
     ].join("\n")
   })}\n`;
@@ -76,9 +76,9 @@ export async function runUserPromptSubmitHook(payload) {
   const directive = parseSteeringDirective(payload.prompt);
   if (directive === null) {
     if (hasSteeringMarker(payload.prompt)) return "";
-    if (hasEngineerTrigger(payload.prompt)) return await runEngineerTriggerHook(payload, { statusForPayload, guideForPayload, renderLoopyContext, formatAdditionalContext });
+    if (hasEngineerTrigger(payload.prompt)) return await runEngineerTriggerHook(payload, { statusForPayload, guideForPayload, renderSuperloopyContext, formatAdditionalContext });
     if (hasLoosePromptTrigger(payload.prompt)) return await runLoosePromptTriggerHook(payload);
-    if (!envOn(process.env, "LOOPY_AUTO_CONTEXT")) return "";
+    if (!envOn(process.env, "SUPERLOOPY_AUTO_CONTEXT")) return "";
     return await runContextInjectionHook(payload, "UserPromptSubmit");
   }
   try {
@@ -102,21 +102,21 @@ export async function runSessionStartHook(payload) {
   if (transcriptHasContextPressureMarker(payload.transcript_path)) return "";
   const contexts = [];
   try {
-    const bootstrap = await bootstrapLoopy(payload.cwd);
+    const bootstrap = await bootstrapSuperloopy(payload.cwd);
     if (bootstrapHasUserSignal(bootstrap)) {
       contexts.push(formatBootstrapHookContext(bootstrap));
     }
   } catch (error) {
     contexts.push([
-      "Loopy bootstrap",
+      "Superloopy bootstrap",
       "",
       `- setup failed: ${error instanceof Error ? error.message : String(error)}`,
-      "- Run `loopy install --json` or `node <plugin-root>/src/cli.js install --json` to retry."
+      "- Run `superloopy install --json` or `node <plugin-root>/src/cli.js install --json` to retry."
     ].join("\n"));
   }
-  if (envOn(process.env, "LOOPY_AUTO_CONTEXT")) {
-    const loopyContext = await readContextInjection(payload);
-    if (loopyContext.length > 0) contexts.push(loopyContext);
+  if (envOn(process.env, "SUPERLOOPY_AUTO_CONTEXT")) {
+    const superloopyContext = await readContextInjection(payload);
+    if (superloopyContext.length > 0) contexts.push(superloopyContext);
   }
   return formatAdditionalContext("SessionStart", contexts.join("\n\n"));
 }
@@ -125,7 +125,7 @@ export async function runStopHook(payload) {
   if (!isRecord(payload)) return "";
   if (payload.hook_event_name !== "Stop" && payload.hook_event_name !== "SubagentStop") return "";
   if (typeof payload.cwd !== "string") return "";
-  if (!envOn(process.env, "LOOPY_STOP_HOOK")) return "";
+  if (!envOn(process.env, "SUPERLOOPY_STOP_HOOK")) return "";
   return await decideContinuation(payload, {
     statusForPayload,
     guideForPayload,
@@ -138,7 +138,7 @@ export async function runStopHook(payload) {
 }
 
 export function parseSteeringDirective(prompt) {
-  const match = /(?:^|\s)LOOPY_STEER:\s*(\{[\s\S]*\})\s*$/u.exec(prompt);
+  const match = /(?:^|\s)SUPERLOOPY_STEER:\s*(\{[\s\S]*\})\s*$/u.exec(prompt);
   if (!match) return null;
   const parsed = parseJson(match[1]);
   if (!isRecord(parsed)) return null;
@@ -181,7 +181,7 @@ export function hasLoosePromptTrigger(prompt) {
 }
 
 function hasSteeringMarker(prompt) {
-  return /(?:^|\s)LOOPY_STEER:/u.test(prompt);
+  return /(?:^|\s)SUPERLOOPY_STEER:/u.test(prompt);
 }
 
 function hasProtectedSteeringPayload(value) {
@@ -213,7 +213,7 @@ function readNonEmptyString(value) {
 
 function extractReceipt(message) {
   if (typeof message !== "string") return null;
-  const match = /(?:EVIDENCE_RECORDED|LOOPY_EVIDENCE):\s*(\S+)/u.exec(message);
+  const match = /(?:EVIDENCE_RECORDED|SUPERLOOPY_EVIDENCE):\s*(\S+)/u.exec(message);
   return match?.[1] ?? null;
 }
 
@@ -231,7 +231,7 @@ async function readContextInjection(payload) {
   }
   if (status.summary.aggregateComplete) return "";
   const guide = guideForPayload(payload, status.plan);
-  return renderLoopyContext(status, guide);
+  return renderSuperloopyContext(status, guide);
 }
 
 async function runLoosePromptTriggerHook(payload) {
@@ -244,9 +244,9 @@ async function runLoosePromptTriggerHook(payload) {
     return formatAdditionalContext("UserPromptSubmit", [
       "Loopywork trigger",
       "",
-      "Loose prompt trigger detected. Use existing repo-local Loopy state; do not create a second plan.",
+      "Loose prompt trigger detected. Use existing repo-local Superloopy state; do not create a second plan.",
       "",
-      renderLoopyContext(status, guide)
+      renderSuperloopyContext(status, guide)
     ].join("\n"));
   } catch {
     return formatAdditionalContext("UserPromptSubmit", renderLoosePromptStarter(payload));
@@ -269,12 +269,12 @@ function renderLoosePromptStarter(payload) {
   return [
     "Loopywork trigger",
     "",
-    "Loose prompt trigger detected. This trigger is guidance only; it must not mutate Loopy state by itself.",
+    "Loose prompt trigger detected. This trigger is guidance only; it must not mutate Superloopy state by itself.",
     "",
-    `- Start unless the user is only asking about Loopy: \`loopy loop begin --brief ${briefArg} --mode light --json\``,
-    "- Then follow `loopy loop guide --json` for the exact next command.",
-    "- Record proof with `loopy loop prove -- <validation-command>` or artifact-backed `loopy loop evidence ...`.",
-    "- Completion still requires `loopy loop check` and `loopy loop finish --evidence \"<summary>\" --json`."
+    `- Start unless the user is only asking about Superloopy: \`superloopy loop begin --brief ${briefArg} --mode light --json\``,
+    "- Then follow `superloopy loop guide --json` for the exact next command.",
+    "- Record proof with `superloopy loop prove -- <validation-command>` or artifact-backed `superloopy loop evidence ...`.",
+    "- Completion still requires `superloopy loop check` and `superloopy loop finish --evidence \"<summary>\" --json`."
   ].join("\n");
 }
 
@@ -283,9 +283,9 @@ function renderLoosePromptCompleted(status) {
   return [
     "Loopywork trigger",
     "",
-    "Loose prompt trigger detected, but the current Loopy aggregate is already complete.",
+    "Loose prompt trigger detected, but the current Superloopy aggregate is already complete.",
     "",
-    `- Inspect: \`loopy loop status${session} --json\``,
+    `- Inspect: \`superloopy loop status${session} --json\``,
     "- Start unrelated work with a fresh session id or intentionally replace state with `--force`."
   ].join("\n");
 }
@@ -298,18 +298,18 @@ function shellQuote(value) {
   return `'${value.replace(/'/g, "'\"'\"'")}'`;
 }
 
-function renderLoopyContext(status, guide) {
+function renderSuperloopyContext(status, guide) {
   const nextGoal = status.plan.goals.find((goal) => goal.status === "in_progress")
     ?? status.plan.goals.find((goal) => goal.status === "pending")
     ?? null;
   return [
-    "Loopy context",
+    "Superloopy context",
     "",
-    "Repo-local Loopy state exists. Use it as the durable source of truth for this task.",
+    "Repo-local Superloopy state exists. Use it as the durable source of truth for this task.",
     "",
-    `- Plan: \`${status.plan.goalsPath ?? ".loopy/goals.json"}\``,
-    `- Ledger: \`${status.plan.ledgerPath ?? ".loopy/ledger.jsonl"}\``,
-    `- Evidence root: \`${status.plan.evidencePath ?? ".loopy/evidence"}\``,
+    `- Plan: \`${status.plan.goalsPath ?? ".superloopy/goals.json"}\``,
+    `- Ledger: \`${status.plan.ledgerPath ?? ".superloopy/ledger.jsonl"}\``,
+    `- Evidence root: \`${status.plan.evidencePath ?? ".superloopy/evidence"}\``,
     `- Goal progress: ${status.summary.goals.complete}/${status.summary.goals.total} complete`,
     `- Criteria progress: ${status.summary.criteria.pass}/${status.summary.criteria.total} pass`,
     nextGoal === null ? "" : `- Current goal: ${nextGoal.id} ${nextGoal.title}`,
@@ -322,9 +322,9 @@ function renderLoopyContext(status, guide) {
     ...renderProofPlan(guide),
     ...renderRecordedEvidence(guide),
     "",
-    "Run `loopy loop status --json` before claiming progress.",
-    `Run \`${guide.commands.guide}\` for the exact next Loopy command.`,
-    `Record criterion evidence only with a non-empty artifact under \`${status.plan.evidencePath ?? ".loopy/evidence"}\`.`
+    "Run `superloopy loop status --json` before claiming progress.",
+    `Run \`${guide.commands.guide}\` for the exact next Superloopy command.`,
+    `Record criterion evidence only with a non-empty artifact under \`${status.plan.evidencePath ?? ".superloopy/evidence"}\`.`
   ].filter(Boolean).join("\n");
 }
 
@@ -334,14 +334,14 @@ function renderContinuationDirective(status, guide) {
     ?? null;
   const nextCriterion = nextGoal?.criteria.find((criterion) => criterion.status !== "pass") ?? null;
   return [
-    "Loopy continuation",
+    "Superloopy continuation",
     "",
-    "You are mid-loop. Do not ask whether to continue; resume from repo-local Loopy state.",
+    "You are mid-loop. Do not ask whether to continue; resume from repo-local Superloopy state.",
     "",
     "State:",
-    `- Plan: \`${status.plan.goalsPath ?? ".loopy/goals.json"}\``,
-    `- Ledger: \`${status.plan.ledgerPath ?? ".loopy/ledger.jsonl"}\``,
-    `- Evidence root: \`${status.plan.evidencePath ?? ".loopy/evidence"}\``,
+    `- Plan: \`${status.plan.goalsPath ?? ".superloopy/goals.json"}\``,
+    `- Ledger: \`${status.plan.ledgerPath ?? ".superloopy/ledger.jsonl"}\``,
+    `- Evidence root: \`${status.plan.evidencePath ?? ".superloopy/evidence"}\``,
     `- Goal progress: ${status.summary.goals.complete}/${status.summary.goals.total} complete`,
     `- Criteria progress: ${status.summary.criteria.pass}/${status.summary.criteria.total} pass`,
     nextGoal === null ? "" : `- Next goal: ${nextGoal.id} ${nextGoal.title}`,
@@ -356,10 +356,10 @@ function renderContinuationDirective(status, guide) {
     ...renderRecordedEvidence(guide),
     "",
     "Required next actions:",
-    "1. Run `loopy loop status --json` and inspect current state.",
+    "1. Run `superloopy loop status --json` and inspect current state.",
     `2. Run \`${guide.commands.guide}\` to confirm the exact next command.`,
     `3. Execute next action: \`${guide.nextAction.command}\`.`,
-    `4. Produce a real artifact under \`${status.plan.evidencePath ?? ".loopy/evidence"}\` before recording criterion evidence.`,
+    `4. Produce a real artifact under \`${status.plan.evidencePath ?? ".superloopy/evidence"}\` before recording criterion evidence.`,
     "5. Checkpoint only after required criteria pass."
   ].filter(Boolean).join("\n");
 }
@@ -443,7 +443,7 @@ async function statusForPayload(payload) {
 }
 
 function isMissingPlanError(error) {
-  return error instanceof Error && error.message.startsWith("No Loopy plan found.");
+  return error instanceof Error && error.message.startsWith("No Superloopy plan found.");
 }
 
 function scopeFromPayload(payload) {

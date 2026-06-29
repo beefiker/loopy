@@ -1,8 +1,8 @@
-// Loopy evidence auditor — the DETERMINISTIC spine.
+// Superloopy evidence auditor — the DETERMINISTIC spine.
 //
-// Loopy owns the trustworthy part: it re-runs each command-backed passed
+// Superloopy owns the trustworthy part: it re-runs each command-backed passed
 // criterion in-process (the exact capture path), hashes the result, and records
-// it in .loopy/audit-state.json. This is the source of truth. The independent
+// it in .superloopy/audit-state.json. This is the source of truth. The independent
 // LLM judgment is layered on top by a host-dispatched read-only robin
 // subagent whose verdict is validated against THIS state (see audit-hooks.js).
 //
@@ -137,9 +137,9 @@ async function auditCriterion(cwd, scope, goal, criterion, priorEntry, forceReru
 
 // Accept-time / gate-time re-derivation: force a fresh deterministic re-run of ONE
 // passed criterion (bypassing the cache) and persist it, so verdict acceptance and
-// the completion gate verify against state Loopy just computed IN-PROCESS — never the
+// the completion gate verify against state Superloopy just computed IN-PROCESS — never the
 // worker-writable recorded audit-state. A forged floor/hash cannot survive because the
-// proof must actually reproduce here and the artifact is re-hashed from Loopy's own
+// proof must actually reproduce here and the artifact is re-hashed from Superloopy's own
 // fresh capture. failCount and the last accepted verdictArtifact are carried across
 // (they track advisory-fail accumulation + replay, not floor reproduction). Returns
 // { state, entry } or null when the criterion is not in the plan.
@@ -187,7 +187,7 @@ export async function recordAuditFailure(cwd, scope, criterionKey, gap, artifact
 }
 
 export function auditMaxFails(env = {}) {
-  const raw = env.LOOPY_AUDIT_MAX_FAILS;
+  const raw = env.SUPERLOOPY_AUDIT_MAX_FAILS;
   if (raw === undefined || raw === null || raw === "") return 3;
   const parsed = Number.parseInt(raw, 10);
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : 3;
@@ -197,15 +197,15 @@ function renderAuditDispatch(scope, pending) {
   if (pending.length === 0) return null;
   const sessionFlag = scope?.sessionId ? ` --session-id ${scope.sessionId}` : "";
   const lines = [
-    "Loopy audit — independent judgment required",
+    "Superloopy audit — independent judgment required",
     "",
-    "Loopy re-ran the proof for these criteria and recorded the result. For each, dispatch a read-only auditor to judge whether the re-run actually satisfies the scenario, then it must end with `LOOPY_AUDIT: <verdict-path>`:",
+    "Superloopy re-ran the proof for these criteria and recorded the result. For each, dispatch a read-only auditor to judge whether the re-run actually satisfies the scenario, then it must end with `SUPERLOOPY_AUDIT: <verdict-path>`:",
     ""
   ];
   for (const entry of pending) {
     lines.push(`- ${entry.criterion}: \`task(subagent_type="robin", run_in_background=false)\` — cite re-run artifact \`${entry.rerunArtifact}\` against the scenario; write verdict to \`${evidenceRelativeDir(scope)}/audit/${entry.criterion.replace("/", "-")}-verdict.json\`.`);
   }
-  lines.push("", `The auditor must be read-only and skeptical. A pass requires citing the re-run artifact. Re-check status with \`loopy loop audit${sessionFlag} --json\`.`);
+  lines.push("", `The auditor must be read-only and skeptical. A pass requires citing the re-run artifact. Re-check status with \`superloopy loop audit${sessionFlag} --json\`.`);
   return lines.join("\n");
 }
 

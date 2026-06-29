@@ -10,7 +10,7 @@ import { captureLoop } from "../src/capture.js";
 import { createLoop, evidenceLoop, nextLoop } from "../src/loop.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-audit-"));
+  return mkdtemp(join(tmpdir(), "superloopy-audit-"));
 }
 
 async function readJson(repo, ...parts) {
@@ -18,9 +18,9 @@ async function readJson(repo, ...parts) {
 }
 
 async function writeArtifact(repo, name, body = "proof\n") {
-  await mkdir(join(repo, ".loopy", "evidence"), { recursive: true });
-  await writeFile(join(repo, ".loopy", "evidence", name), body, "utf8");
-  return `.loopy/evidence/${name}`;
+  await mkdir(join(repo, ".superloopy", "evidence"), { recursive: true });
+  await writeFile(join(repo, ".superloopy", "evidence", name), body, "utf8");
+  return `.superloopy/evidence/${name}`;
 }
 
 test("auditLoop re-runs a command-backed pass criterion and records floor pass", async () => {
@@ -32,10 +32,10 @@ test("auditLoop re-runs a command-backed pass criterion and records floor pass",
   const result = await auditLoop(repo, []);
   assert.equal(result.audited, 1);
   assert.equal(result.criteria[0].floor, "pass");
-  assert.ok(result.criteria[0].rerunArtifact.startsWith(".loopy/evidence/audit/"));
+  assert.ok(result.criteria[0].rerunArtifact.startsWith(".superloopy/evidence/audit/"));
   assert.equal(typeof result.criteria[0].rerunArtifactHash, "string");
 
-  const state = await readJson(repo, ".loopy", "audit-state.json");
+  const state = await readJson(repo, ".superloopy", "audit-state.json");
   assert.equal(state.criteria[0].criterion, "G001/C001");
 });
 
@@ -47,9 +47,9 @@ test("auditLoop skips an unchanged, already-passed criterion (cache hit)", async
   await auditLoop(repo, []);
 
   // Simulate an accepted verdict, then re-audit: the entry must be served from cache.
-  const state = await readJson(repo, ".loopy", "audit-state.json");
+  const state = await readJson(repo, ".superloopy", "audit-state.json");
   state.criteria[0].verdict = "pass";
-  await writeFile(join(repo, ".loopy", "audit-state.json"), JSON.stringify(state), "utf8");
+  await writeFile(join(repo, ".superloopy", "audit-state.json"), JSON.stringify(state), "utf8");
 
   const result = await auditLoop(repo, []);
   assert.equal(result.criteria[0].cached, true);
@@ -60,14 +60,14 @@ test("auditLoop marks a non-reproducing re-run inconclusive, never auto-fail", a
   await createLoop(repo, ["--brief", "Ship"]);
   const artifact = await writeArtifact(repo, "flaky.txt");
   // Craft a passed criterion whose command now fails on re-run (flaky/non-idempotent).
-  const plan = await readJson(repo, ".loopy", "goals.json");
+  const plan = await readJson(repo, ".superloopy", "goals.json");
   Object.assign(plan.goals[0].criteria[0], { status: "pass", artifact, command: ["node", "-e", "process.exit(1)"], exitCode: 0 });
-  await writeFile(join(repo, ".loopy", "goals.json"), JSON.stringify(plan), "utf8");
+  await writeFile(join(repo, ".superloopy", "goals.json"), JSON.stringify(plan), "utf8");
 
   const result = await auditLoop(repo, ["--criterion-id", "C001"]);
   assert.equal(result.criteria[0].floor, "inconclusive");
   // The plan criterion is untouched — no silent flip to fail.
-  const after = await readJson(repo, ".loopy", "goals.json");
+  const after = await readJson(repo, ".superloopy", "goals.json");
   assert.equal(after.goals[0].criteria[0].status, "pass");
 });
 
@@ -86,11 +86,11 @@ test("auditLoop re-validates a manual criterion and fails when the artifact is g
   const gone = await auditLoop(repo, ["--criterion-id", "C001"]);
   assert.equal(gone.criteria[0].floor, "fail");
   // A deterministic floor failure flips the criterion off pass so the engine re-drives it.
-  const after = await readJson(repo, ".loopy", "goals.json");
+  const after = await readJson(repo, ".superloopy", "goals.json");
   assert.equal(after.goals[0].criteria[0].status, "fail");
 });
 
-test("default gate requires an audit section only when LOOPY_AUDIT=on", async () => {
+test("default gate requires an audit section only when SUPERLOOPY_AUDIT=on", async () => {
   const repo = await tempRepo();
   await createLoop(repo, ["--brief", "Ship"]);
   const proof = await writeArtifact(repo, "default-proof.txt");
@@ -101,13 +101,13 @@ test("default gate requires an audit section only when LOOPY_AUDIT=on", async ()
   // Off (default): the bare default gate validates unchanged.
   assert.equal(validateQualityGate(repo, bare).status, "passed");
 
-  const previous = process.env.LOOPY_AUDIT;
-  process.env.LOOPY_AUDIT = "on";
+  const previous = process.env.SUPERLOOPY_AUDIT;
+  process.env.SUPERLOOPY_AUDIT = "on";
   try {
     assert.throws(() => validateQualityGate(repo, bare), /audit/i);
     assert.equal(validateQualityGate(repo, withAudit).audit.recommendation, "APPROVE");
   } finally {
-    if (previous === undefined) delete process.env.LOOPY_AUDIT;
-    else process.env.LOOPY_AUDIT = previous;
+    if (previous === undefined) delete process.env.SUPERLOOPY_AUDIT;
+    else process.env.SUPERLOOPY_AUDIT = previous;
   }
 });

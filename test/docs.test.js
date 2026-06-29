@@ -6,17 +6,17 @@ import test from "node:test";
 
 test("public docs describe hook proof-plan context and active evidence receipts", async () => {
   const readme = await readFile("README.md", "utf8");
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
 
   assert.match(skill, /next command, proof target, recorded evidence.*proof plan, capture template, and evidence template/s);
-  assert.match(skill, /LOOPY_EVIDENCE: <path-under-active-evidence-root>/);
+  assert.match(skill, /SUPERLOOPY_EVIDENCE: <path-under-active-evidence-root>/);
 });
 
 test("public docs describe guide, trace, report, and check evidence surfaces", async () => {
   const readme = await readFile("README.md", "utf8");
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
-  const notes = await readFile("docs/loopy-gate-notes.md", "utf8");
-  const audit = await readFile("docs/loopy-file-audit.md", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
+  const notes = await readFile("docs/superloopy-gate-notes.md", "utf8");
+  const audit = await readFile("docs/superloopy-file-audit.md", "utf8");
 
   assert.match(skill, /manual evidence notes/i);
   assert.match(skill, /flow checklist/i);
@@ -28,12 +28,12 @@ test("public docs describe guide, trace, report, and check evidence surfaces", a
 
 test("public docs describe doctor checks", async () => {
   const readme = await readFile("README.md", "utf8");
-  const audit = await readFile("docs/loopy-file-audit.md", "utf8");
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
-  const designAudit = await readFile("docs/loopy-design-audit.md", "utf8");
-  const modelPolicy = await readFile("docs/loopy-model-policy.md", "utf8");
+  const audit = await readFile("docs/superloopy-file-audit.md", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
+  const designAudit = await readFile("docs/superloopy-design-audit.md", "utf8");
+  const modelPolicy = await readFile("docs/superloopy-model-policy.md", "utf8");
 
-  assert.match(audit, /Loopy-native boundary/i);
+  assert.match(audit, /Superloopy-native boundary/i);
   assert.match(audit, /Compatibility boundary/i);
   assert.match(skill, /generic comparison scan/i);
   assert.match(skill, /design audit, generic comparison scan status/);
@@ -46,12 +46,15 @@ test("public docs describe doctor checks", async () => {
 
 test("public docs describe real marketplace install and bootstrap", async () => {
   const readme = await readFile("README.md", "utf8");
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
-  const notes = await readFile("docs/loopy-gate-notes.md", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
+  const notes = await readFile("docs/superloopy-gate-notes.md", "utf8");
 
-  assert.match(readme, /codex plugin marketplace add https:\/\/github\.com\/beefiker\/loopy/);
-  assert.match(readme, /codex plugin add loopy@beefiker/);
+  assert.match(readme, /codex plugin marketplace add https:\/\/github\.com\/beefiker\/superloopy/);
+  assert.match(readme, /codex plugin add superloopy@beefiker/);
   assert.doesNotMatch(readme, /Built on the Codex marketplace bootstrap shape/i);
+  assert.doesNotMatch(readme, /Restart Codex twice/i);
+  assert.match(readme, /Restart Codex after installing the plugin/);
+  assert.match(readme, /approve them; the next approved session runs a `SessionStart` hook/);
   assert.match(readme, /SessionStart.*one-time bootstrap/s);
   assert.match(readme, /node src\/cli\.js install --json/);
   assert.doesNotMatch(readme, /\/Users\/bee|<repo-url>/);
@@ -69,8 +72,8 @@ test("README locales are discoverable and do not point at removed PDF manuals", 
     assert.match(content, /README\.zh-CN\.md/);
     assert.match(content, /README\.ja\.md/);
     assert.match(content, /README\.es\.md/);
-    assert.match(content, /codex plugin marketplace add https:\/\/github\.com\/beefiker\/loopy/);
-    assert.match(content, /codex plugin add loopy@beefiker/);
+    assert.match(content, /codex plugin marketplace add https:\/\/github\.com\/beefiker\/superloopy/);
+    assert.match(content, /codex plugin add superloopy@beefiker/);
     assert.doesNotMatch(content, /manual(?:-ko)?\.pdf/);
     assert.doesNotMatch(content, /loopy add a \/health endpoint that returns 200/);
   }
@@ -87,10 +90,24 @@ test("README locales are discoverable and do not point at removed PDF manuals", 
   assert.match(await readFile("README.es.md", "utf8"), /loopy corrige la prueba de inicio de sesión que falla y verifícala con evidencia/);
 });
 
+test("README lists the packaged Superloopy skills and their jobs", async () => {
+  const locales = ["README.md", "README.ko.md", "README.zh-CN.md", "README.ja.md", "README.es.md"];
+
+  for (const file of locales) {
+    const content = await readFile(file, "utf8");
+    assert.match(content, /superloopy-loop/);
+    assert.match(content, /superloopy-research/);
+    assert.match(content, /superloopy-clone/);
+    assert.match(content, /loopy research/);
+    assert.match(content, /loopy clone/);
+    assert.match(content, /\.superloopy\/evidence/);
+  }
+});
+
 test("public docs describe loose prompt triggers as guidance-only", async () => {
   const readme = await readFile("README.md", "utf8");
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
-  const agent = await readFile("skills/loopy-loop/agents/openai.yaml", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
+  const agent = await readFile("skills/superloopy-loop/agents/openai.yaml", "utf8");
 
   assert.match(skill, /loopywork/);
   assert.match(skill, /never mutate/i);
@@ -98,15 +115,15 @@ test("public docs describe loose prompt triggers as guidance-only", async () => 
   assert.match(agent, /lpy/);
 });
 
-test("project custom agents define Loopy subagent workflow", async () => {
+test("project custom agents define Superloopy subagent workflow", async () => {
   const readme = await readFile("README.md", "utf8");
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
   const agents = ["franky", "zoro", "usopp", "jinbe", "robin", "nami"];
 
   assert.match(readme, /\.codex\/agents/);
-  assert.match(readme, /loopy agents install/);
+  assert.match(readme, /superloopy agents install/);
   assert.match(skill, /## Optional Subagent-Driven Mode/);
-  assert.match(skill, /loopy agents install/);
+  assert.match(skill, /superloopy agents install/);
   assert.match(skill, /allowed files, active evidence root, report artifact target/i);
 
   for (const agent of agents) {
@@ -121,14 +138,14 @@ test("project custom agents define Loopy subagent workflow", async () => {
 });
 
 test("public docs encode crew retrospective guardrails", async () => {
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
-  const hostContract = await readFile("docs/loopy-host-contract.md", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
+  const hostContract = await readFile("docs/superloopy-host-contract.md", "utf8");
 
   assert.match(skill, /jinbe-final-gate-report\.md/);
-  assert.match(skill, /\.loopy\/evidence\/gate\.json/);
+  assert.match(skill, /\.superloopy\/evidence\/gate\.json/);
   assert.match(skill, /quality gate artifact.*JSON/s);
-  assert.match(skill, /For full crew, record each dispatch with `loopy loop handoff/s);
-  assert.match(skill, /run `loopy loop fleet --json` before the final gate/);
+  assert.match(skill, /For full crew, record each dispatch with `superloopy loop handoff/s);
+  assert.match(skill, /run `superloopy loop fleet --json` before the final gate/);
   assert.match(skill, /must own a real bounded implementation slice before the parent edits or completes that slice/);
   assert.match(skill, /If the requested repository path differs from `cwd`/);
   assert.match(skill, /git status --short --untracked-files=all/);
@@ -138,14 +155,14 @@ test("public docs encode crew retrospective guardrails", async () => {
 
 test("public docs describe crew lines as presentation-only status", async () => {
   const readme = await readFile("README.md", "utf8");
-  const skill = await readFile("skills/loopy-loop/SKILL.md", "utf8");
-  const crewLines = await readFile("docs/loopy-crew-lines.md", "utf8");
-  const designAudit = await readFile("docs/loopy-design-audit.md", "utf8");
+  const skill = await readFile("skills/superloopy-loop/SKILL.md", "utf8");
+  const crewLines = await readFile("docs/superloopy-crew-lines.md", "utf8");
+  const designAudit = await readFile("docs/superloopy-design-audit.md", "utf8");
 
   assert.match(readme, /one original crew line/);
   assert.match(readme, /supported catalog/);
   assert.match(skill, /presentation only/);
-  assert.match(skill, /LOOPY_CREW_LANGUAGE/);
+  assert.match(skill, /SUPERLOOPY_CREW_LANGUAGE/);
   assert.match(crewLines, /Do not copy source-character quotes/);
   assert.match(crewLines, /`en`, `ko`, `ja`, `zh`, `es`, `fr`, `de`, `it`, `pt`, `id`, `hi`, `tr`, `vi`, `ru`, `ar`, and `th`/);
   assert.match(crewLines, /fall back to English/);
@@ -154,7 +171,7 @@ test("public docs describe crew lines as presentation-only status", async () => 
 });
 
 test("loop golden set lists every Git-visible file with strict evidence", async () => {
-  const golden = await readFile("docs/loopy-loop-golden-set.md", "utf8");
+  const golden = await readFile("docs/superloopy-loop-golden-set.md", "utf8");
   const missing = listRepoFiles().filter((file) => !golden.includes(`\`${file}\``));
 
   assert.deepEqual(missing, []);
@@ -165,7 +182,7 @@ test("loop golden set lists every Git-visible file with strict evidence", async 
 });
 
 test("loop golden set records threshold history for this turn", async () => {
-  const golden = await readFile("docs/loopy-loop-golden-set.md", "utf8");
+  const golden = await readFile("docs/superloopy-loop-golden-set.md", "utf8");
 
   assert.match(golden, /## Threshold Model/);
   assert.match(golden, /20/);

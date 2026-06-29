@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌀 Loopy
+# 🌀 Superloopy
 
 **Codex のためのループエンジニアリング。** `loopy <task>` と入力すると、エージェントが作業し、各部分を実際の証拠で検証してから完了を報告します。
 
@@ -26,11 +26,23 @@
 loopy 失敗しているログインテストを直して証拠で検証して
 ```
 
-エージェントが計画を立て、各部分を実ファイルで証明し、結果を返します。ユーザーが自分でコマンドを実行する必要はありません。付属の Stop hook は `LOOPY_STOP_HOOK=on` のときだけ動作します。
+エージェントが計画を立て、各部分を実ファイルで証明し、結果を返します。ユーザーが自分でコマンドを実行する必要はありません。付属の Stop hook は `SUPERLOOPY_STOP_HOOK=on` のときだけ動作します。
+
+## Skills
+
+Superloopy はコマンド層を小さく保ちます。専門的な進め方は skills が持ちます。いつ使うか、何を見るか、どの証拠を `.superloopy/evidence/` に残すかを決めます。
+
+| Skill | 使う場面 | 残すもの |
+| --- | --- | --- |
+| `superloopy-loop` | `loopy <task>`、`loopy team <task>`、`loopywork`、`$lpy` を使うとき、または証拠付き完了が必要な作業。 | 軽量な計画、次の行動、コマンドで検証した証拠、品質 gate、最終 evidence report。 |
+| `superloopy-research` | `loopy research`、deep research、exhaustive investigation、または引用付きレポートを求めるとき。 | 調査軸、拡張 wave、claim ledger、検証メモ、引用付き synthesis artifact。 |
+| `superloopy-clone` | `loopy clone`、許可された Web サイトのクローン、再構築、移行、ピクセル単位の復元を求めるとき。 | ブラウザ取得、ページ構造、デザイントークン、アセット一覧、実装メモ、build 出力、visual QA 証拠。 |
+
+Loop skill が標準のガードレールです。Research と clone は明示的に使う専門モードで、どちらも完了文だけではなく Superloopy evidence を残して終わります。
 
 ## Crew
 
-大きな作業向けに、Loopy は `.codex/agents/` に 6 つの任意サブエージェントを用意しています。それぞれが 1 つのレーンを担当します。プラグインのインストール時に自動で入ります。再コピーが必要なときは `loopy agents install` を使えます。推奨モデル設定は `docs/loopy-model-policy.md` に記録され、`loopy doctor` が確認します。
+大きな作業向けに、Superloopy は `.codex/agents/` に 6 つの任意サブエージェントを用意しています。それぞれが 1 つのレーンを担当します。プラグインのインストール時に自動で入ります。再コピーが必要なときは `superloopy agents install` を使えます。推奨モデル設定は `docs/superloopy-model-policy.md` に記録され、`superloopy doctor` が確認します。
 
 <table>
   <tr>
@@ -45,22 +57,22 @@ loopy 失敗しているログインテストを直して証拠で検証して
   </tr>
 </table>
 
-`loopy team <task>` で crew を呼び出します。`loopy crew`、1 語の `loopycrew`、または `ultrawork <task>` も使えます。Loopy は作業を並列レーンに分け、すべての部分が証明されるまで完了としません。通常の `loopy <task>` はソロモードで動き、明確に独立した部分がある場合だけ委任します。
+`loopy team <task>` で crew を呼び出します。`loopy crew`、1 語の `loopycrew`、または `ultrawork <task>` も使えます。Superloopy は作業を並列レーンに分け、すべての部分が証明されるまで完了としません。通常の `loopy <task>` はソロモードで動き、明確に独立した部分がある場合だけ委任します。
 
-フル crew 実行では、親が各レーンを `loopy loop handoff` で記録し、`loopy loop fleet --json` で確認します。人間向けの最終 gate レポートは、機械向けの gate JSON とは分けます。gate レポートは Markdown 証拠にできますが、`loopy loop finish --artifact` には `.json` 品質 gate が必要です。
+フル crew 実行では、親が各レーンを `superloopy loop handoff` で記録し、`superloopy loop fleet --json` で確認します。人間向けの最終 gate レポートは、機械向けの gate JSON とは分けます。gate レポートは Markdown 証拠にできますが、`superloopy loop finish --artifact` には `.json` 品質 gate が必要です。
 
-追跡中の crew handoff が完了すると、Loopy は通常の `handoff` または `fleet` 状態の前にオリジナルの crew line を 1 行出せます。assignment または scoped brief から対応言語を推測し、推測できない場合は英語に戻ります。この行は表示用であり、verdict、evidence artifact、outstanding、attention が権威です。
+追跡中の crew handoff が完了すると、Superloopy は通常の `handoff` または `fleet` 状態の前にオリジナルの crew line を 1 行出せます。assignment または scoped brief から対応言語を推測し、推測できない場合は英語に戻ります。この行は表示用であり、verdict、evidence artifact、outstanding、attention が権威です。
 
 ## インストール
 
-Node.js 20 以上が必要です。Loopy はランタイム依存のないパッケージです。
+Node.js 20 以上が必要です。Superloopy はランタイム依存のないパッケージです。
 
 ```
-codex plugin marketplace add https://github.com/beefiker/loopy
-codex plugin add loopy@beefiker
+codex plugin marketplace add https://github.com/beefiker/superloopy
+codex plugin add superloopy@beefiker
 ```
 
-Codex を 2 回再起動します。まず hooks を承認し、次に再読み込みします。最初に承認されたセッションは `SessionStart` hook で一度だけ bootstrap を実行し、`loopy` コマンドと agents をインストールします。`loopy` が見つからない場合、そのフォルダが `PATH` にありません。bootstrap が追加すべき行を表示します。`loopy doctor` で確認してください。
+プラグインをインストールしたら Codex を再起動します。Codex が hooks の確認を求めたら承認してください。次の承認済みセッションで `SessionStart` hook が一度だけ bootstrap を実行し、`superloopy` コマンドと agents をインストールします。`superloopy` が見つからない場合、そのフォルダが `PATH` にありません。bootstrap が追加すべき行を表示します。`superloopy doctor` で確認してください。
 
 checkout からインストールする場合は `node src/cli.js install --json` を実行してください。
 

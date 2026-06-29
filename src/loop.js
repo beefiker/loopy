@@ -22,7 +22,7 @@ import { summarizePlan } from "./plan-summary.js";
 import {
   appendLedger,
   briefRelativePath,
-  ensureLoopyDirs,
+  ensureSuperloopyDirs,
   evidenceRelativeDir,
   goalsRelativePath,
   goalsPath,
@@ -45,7 +45,7 @@ export async function createLoop(cwd, argv) {
   const mode = readMode(readFlag(argv, "--mode") ?? "light");
   const force = argv.includes("--force");
   if (!force && existsSync(goalsPath(cwd, scope))) {
-    throw new Error("Loopy plan already exists. Pass --force to replace it.");
+    throw new Error("Superloopy plan already exists. Pass --force to replace it.");
   }
   const now = nowIso();
   const goals = deriveGoals(brief).map((goal, index) => makeGoal(goal, index, mode, now));
@@ -205,7 +205,7 @@ export async function reviewLoop(cwd, argv) {
     summary: summarizePlan(plan)
   };
   if (notes) gate.notes = notes;
-  await ensureLoopyDirs(cwd, scope);
+  await ensureSuperloopyDirs(cwd, scope);
   await writeJsonAtomic(artifact.absolutePath, gate);
   const validatedGate = validateQualityGate(cwd, gate, scope);
   // A "passed" quality gate that carries an audit section must have genuine,
@@ -378,7 +378,7 @@ function requireQualityGateJsonArtifact(path) {
   if (path.toLowerCase().endsWith(".json")) return;
   throw new Error([
     "Quality gate artifact must use a .json path.",
-    "Use `loopy loop report --artifact <path>.md` or a separate worker report for Markdown evidence."
+    "Use `superloopy loop report --artifact <path>.md` or a separate worker report for Markdown evidence."
   ].join(" "));
 }
 

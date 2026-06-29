@@ -7,7 +7,7 @@
             "type": "command",
             "command": "node \"${PLUGIN_ROOT}/src/cli.js\" hook session-start",
             "timeout": 5,
-            "statusMessage": "(Loopy) Loading Loop Context"
+            "statusMessage": "(Superloopy) Loading Loop Context"
           }
         ]
       }

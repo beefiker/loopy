@@ -4,7 +4,7 @@ import { readFlag } from "./args.js";
 import { resolveEvidenceOutputPath } from "./artifacts.js";
 import { buildGuide } from "./guide.js";
 import { traceLoop } from "./trace.js";
-import { appendLedger, ensureLoopyDirs, evidenceRelativeDir, nowIso, readPlan, scopeFromSessionId } from "./store.js";
+import { appendLedger, ensureSuperloopyDirs, evidenceRelativeDir, nowIso, readPlan, scopeFromSessionId } from "./store.js";
 
 const DEFAULT_REPORT_NAME = "report.md";
 
@@ -13,7 +13,7 @@ export async function reportLoop(cwd, argv = []) {
   const artifactPath = readFlag(argv, "--artifact") ?? `${evidenceRelativeDir(scope)}/${DEFAULT_REPORT_NAME}`;
   const artifact = resolveEvidenceOutputPath(cwd, artifactPath, scope);
   const trace = await traceLoop(cwd, argv);
-  await ensureLoopyDirs(cwd, scope);
+  await ensureSuperloopyDirs(cwd, scope);
   await mkdir(dirname(artifact.absolutePath), { recursive: true });
   await writeFile(artifact.absolutePath, renderEvidenceReport(trace), "utf8");
   const now = nowIso();
@@ -30,7 +30,7 @@ export async function reportLoop(cwd, argv = []) {
 
 export function renderEvidenceReport(trace) {
   return [
-    "# Loopy Evidence Report",
+    "# Superloopy Evidence Report",
     "",
     `Evidence root: \`${trace.paths.evidence}\``,
     `Ledger: \`${trace.paths.ledger}\``,

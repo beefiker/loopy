@@ -1,6 +1,6 @@
 .DS_Store
 node_modules/
-.loopy/
+.superloopy/
 coverage/
 *.log
 .codex-marketplace-install.json

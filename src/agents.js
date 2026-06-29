@@ -9,8 +9,8 @@ import { hasFlag, readFlag } from "./args.js";
 // read-only auditor; nami is the read-only navigator (no receipt). All are installed so
 // the host can dispatch them; robin was historically shipped only as un-installable skill
 // metadata (the auditor-install gap). Host role-by-name routing is NOT guaranteed, so a
-// dispatch must be self-contained — see docs/loopy-host-contract.md.
-export const LOOPY_AGENT_NAMES = [
+// dispatch must be self-contained — see docs/superloopy-host-contract.md.
+export const SUPERLOOPY_AGENT_NAMES = [
   "franky",
   "zoro",
   "usopp",
@@ -29,7 +29,7 @@ export async function installAgents(cwd, argv, options = {}) {
   await mkdir(target, { recursive: true });
 
   const agents = [];
-  for (const name of LOOPY_AGENT_NAMES) {
+  for (const name of SUPERLOOPY_AGENT_NAMES) {
     const file = `${name}.toml`;
     const sourcePath = join(source, file);
     const targetPath = join(target, file);
@@ -55,7 +55,7 @@ export async function installAgents(cwd, argv, options = {}) {
 
 export function formatAgentsInstallResult(result) {
   const lines = [
-    `loopy agents install: ${result.ok ? "ok" : "conflict"}`,
+    `superloopy agents install: ${result.ok ? "ok" : "conflict"}`,
     `target: ${result.target}`,
     ...result.agents.map((agent) => `- ${agent.name}: ${agent.status}`)
   ];
@@ -70,7 +70,7 @@ export async function installBinShim(cwd, argv, options = {}) {
   const homeDir = options.homeDir ?? homedir();
   const platform = options.platform ?? process.platform;
   const targetDir = resolveBinDir(cwd, argv, env, homeDir);
-  const target = join(targetDir, platform === "win32" ? "loopy.cmd" : "loopy");
+  const target = join(targetDir, platform === "win32" ? "superloopy.cmd" : "superloopy");
   const content = binShimContent(CLI_PATH, platform);
 
   await mkdir(targetDir, { recursive: true });
@@ -85,9 +85,9 @@ export async function installBinShim(cwd, argv, options = {}) {
     onPath,
     pathHint: pathExportHint(targetDir, platform),
     next: status === "conflict"
-      ? "Re-run with --force to replace the existing loopy command."
+      ? "Re-run with --force to replace the existing superloopy command."
       : onPath
-        ? "Run `loopy --help` after restarting Codex or your shell."
+        ? "Run `superloopy --help` after restarting Codex or your shell."
         : `Add ${targetDir} to PATH (\`${pathExportHint(targetDir, platform)}\`), or run ${target} directly.`
   };
 }
@@ -100,14 +100,14 @@ function pathExportHint(targetDir, platform) {
 
 export function formatBinInstallResult(result) {
   return [
-    `loopy bin install: ${result.ok ? "ok" : "conflict"}`,
+    `superloopy bin install: ${result.ok ? "ok" : "conflict"}`,
     `target: ${result.target}`,
     `status: ${result.status}`,
     result.next
   ].join("\n") + "\n";
 }
 
-export async function bootstrapLoopy(cwd, argv = [], options = {}) {
+export async function bootstrapSuperloopy(cwd, argv = [], options = {}) {
   const env = options.env ?? process.env;
   const homeDir = options.homeDir ?? homedir();
   const bin = await installBinShim(cwd, argv, {
@@ -127,15 +127,15 @@ export async function bootstrapLoopy(cwd, argv = [], options = {}) {
     bin,
     agents,
     next: bin.ok && agents.ok
-      ? "Restart Codex so Loopy hooks, skills, CLI wrapper, and custom agents are loaded."
-      : "Resolve conflicts, or re-run with --force if replacing local Loopy files is intended."
+      ? "Restart Codex so Superloopy hooks, skills, CLI wrapper, and custom agents are loaded."
+      : "Resolve conflicts, or re-run with --force if replacing local Superloopy files is intended."
   };
 }
 
 export function formatBootstrapResult(result) {
   const agentCounts = countAgentStatuses(result.agents.agents);
   return [
-    `loopy install: ${result.ok ? "ok" : "conflict"}`,
+    `superloopy install: ${result.ok ? "ok" : "conflict"}`,
     `bin: ${result.bin.status} ${result.bin.target}`,
     `agents: ${formatAgentCounts(agentCounts)}`,
     result.next,
@@ -145,7 +145,7 @@ export function formatBootstrapResult(result) {
 
 export function bootstrapHasUserSignal(result) {
   // Re-surface every session when the wrapper's directory is not on PATH: otherwise a user who
-  // missed the one-time hint gets `loopy: command not found` forever with no breadcrumb.
+  // missed the one-time hint gets `superloopy: command not found` forever with no breadcrumb.
   return result.bin.status !== "unchanged"
     || result.bin.onPath === false
     || result.agents.agents.some((agent) => agent.status !== "unchanged");
@@ -153,7 +153,7 @@ export function bootstrapHasUserSignal(result) {
 
 export function formatBootstrapHookContext(result) {
   return [
-    "Loopy bootstrap",
+    "Superloopy bootstrap",
     "",
     `- CLI wrapper: ${result.bin.status} at ${result.bin.target}`,
     `- Agents: ${formatAgentCounts(countAgentStatuses(result.agents.agents))}`,
@@ -197,9 +197,9 @@ async function installOneTextFile(targetPath, content, force, mode) {
 function resolveBinDir(cwd, argv, env, homeDir) {
   const explicit = readFlag(argv, "--bin-dir");
   if (explicit !== undefined) return resolveUserPath(cwd, explicit, homeDir);
-  const loopyBinDir = env.LOOPY_BIN_DIR;
-  if (typeof loopyBinDir === "string" && loopyBinDir.trim().length > 0) {
-    return resolveUserPath(cwd, loopyBinDir, homeDir);
+  const superloopyBinDir = env.SUPERLOOPY_BIN_DIR;
+  if (typeof superloopyBinDir === "string" && superloopyBinDir.trim().length > 0) {
+    return resolveUserPath(cwd, superloopyBinDir, homeDir);
   }
   const codexLocalBinDir = env.CODEX_LOCAL_BIN_DIR;
   if (typeof codexLocalBinDir === "string" && codexLocalBinDir.trim().length > 0) {

@@ -31,9 +31,9 @@ export async function checkLoop(cwd, argv = []) {
 
 export function formatCheckResult(result) {
   if (result.ok) {
-    return `loopy check: ok\n${evidenceSummaryLine(result)}\n${formatWarnings(result.warnings)}${formatGuide(result)}`;
+    return `superloopy check: ok\n${evidenceSummaryLine(result)}\n${formatWarnings(result.warnings)}${formatGuide(result)}`;
   }
-  const lines = ["loopy check: blocked", evidenceSummaryLine(result)];
+  const lines = ["superloopy check: blocked", evidenceSummaryLine(result)];
   lines.push(...warningLines(result.warnings));
   if (result.unresolvedCriteria.length > 0) {
     lines.push("", "Unresolved criteria:", ...result.unresolvedCriteria.map((item) => `- ${item.ref} ${item.status} -> \`${item.suggestedArtifact}\` ${item.scenario}`));
@@ -133,7 +133,7 @@ function repairStepLines(item) {
 }
 
 function command(subcommand, sessionId, args) {
-  const parts = ["loopy", "loop", subcommand];
+  const parts = ["superloopy", "loop", subcommand];
   if (sessionId) parts.push("--session-id", sessionId);
   return [...parts, ...args.map((arg) => quoteCommandArg(arg))].join(" ");
 }

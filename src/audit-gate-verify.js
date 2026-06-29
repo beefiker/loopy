@@ -8,7 +8,7 @@
 // which bypasses the worker-writable cache/state) and requires the verdict be a genuine,
 // hash-bound PASS over that fresh re-run. So a worker cannot reach aggregate completion
 // by writing an APPROVE section plus a dummy `{"verdict":"pass"}` file: the proof must
-// actually reproduce here, and the artifact is re-hashed from Loopy's own fresh capture.
+// actually reproduce here, and the artifact is re-hashed from Superloopy's own fresh capture.
 //
 // Wired into the completion authorities (loop.js reviewLoop + checkpointLoop). It is
 // deliberately NOT part of validateQualityGate, which stays a synchronous structural
@@ -25,13 +25,13 @@ export async function enforceAuditProvenance(cwd, scope, audit) {
   // Re-derive EVERY passed criterion UNCONDITIONALLY — on the default gate too, not only
   // when an audit section is present. This is the project's core guarantee: a command-backed
   // criterion that no longer reproduces can never reach aggregate completion, even with
-  // LOOPY_AUDIT=off and no cited verdicts (a worker-asserted `status:"pass"` is re-checked
+  // SUPERLOOPY_AUDIT=off and no cited verdicts (a worker-asserted `status:"pass"` is re-checked
   // against a fresh in-process re-run here). For a command-backed criterion this re-runs the
   // command and requires floor 'pass'. NOTE (disclosed limit): a MANUAL (commandless)
   // criterion re-derives to an artifact-existence check only — its correctness is not
   // command-reproducible and rests on the auditor's judgment, not this deterministic floor.
   //
-  // Intentional asymmetry with the continuation engine: `loopy loop audit` leaves a
+  // Intentional asymmetry with the continuation engine: `superloopy loop audit` leaves a
   // non-reproducing ("inconclusive") command criterion ON pass to avoid spinning the loop on a
   // flaky test mid-run. The COMPLETION gate is stricter — it requires the proof to reproduce
   // NOW, so any non-pass floor (fail OR inconclusive) blocks rather than fabricating a "done".
@@ -45,14 +45,14 @@ export async function enforceAuditProvenance(cwd, scope, audit) {
       const key = `${goal.id}/${criterion.id}`;
       const fresh = await auditOneCriterion(cwd, scope, key);
       if (fresh === null || fresh.entry.floor !== "pass") {
-        throw new Error(`Quality gate: criterion ${key} did not re-derive to a passing floor (got "${fresh?.entry?.floor ?? "unknown"}"). Re-prove it with \`loopy loop prove\` (or repair the command) before completing — completion requires the proof to reproduce now.`);
+        throw new Error(`Quality gate: criterion ${key} did not re-derive to a passing floor (got "${fresh?.entry?.floor ?? "unknown"}"). Re-prove it with \`superloopy loop prove\` (or repair the command) before completing — completion requires the proof to reproduce now.`);
       }
       freshByCriterion.set(key, fresh.entry);
     }
   }
 
   // The cited verdicts add the LLM judgment layer, present only when an audit section
-  // exists (LOOPY_AUDIT=on, or a review/matrix gate). The default gate stops here, having
+  // exists (SUPERLOOPY_AUDIT=on, or a review/matrix gate). The default gate stops here, having
   // already re-derived every floor above.
   if (audit === undefined || audit === null) return;
 
@@ -80,7 +80,7 @@ export async function enforceAuditProvenance(cwd, scope, audit) {
       .digest("hex");
     const verified = verifyVerdictAgainstState(verdict, entry, observedHash);
     if (!verified.ok) {
-      throw new Error(`Quality gate audit verdict ${relPath} is not bound to Loopy's re-derived re-run: ${verified.reason}`);
+      throw new Error(`Quality gate audit verdict ${relPath} is not bound to Superloopy's re-derived re-run: ${verified.reason}`);
     }
   }
 }

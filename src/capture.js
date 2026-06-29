@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 import { readFlag } from "./args.js";
 import { resolveEvidenceOutputPath } from "./artifacts.js";
 import { evidenceLoop } from "./loop.js";
-import { ensureLoopyDirs, evidenceRelativeDir, nowIso, scopeFromSessionId } from "./store.js";
+import { ensureSuperloopyDirs, evidenceRelativeDir, nowIso, scopeFromSessionId } from "./store.js";
 
 // Shared deterministic re-run core: spawn a command, derive pass/fail from the
 // exit status exactly as capture does, and write a transcript artifact. Reused
@@ -42,7 +42,7 @@ export async function captureLoop(cwd, argv) {
   const artifactPath = readFlag(options, "--artifact") ?? `${evidenceRelativeDir(scope)}/${goalId}-${criterionId}-capture.txt`;
   const artifact = resolveEvidenceOutputPath(cwd, artifactPath, scope);
   const notes = readFlag(options, "--notes");
-  await ensureLoopyDirs(cwd, scope);
+  await ensureSuperloopyDirs(cwd, scope);
 
   const capture = await runCaptured(cwd, command, artifact);
   const evidenceArgs = [
@@ -78,7 +78,7 @@ function splitCaptureArgv(argv) {
 
 function renderCaptureTranscript(cwd, capture, commandResult) {
   return [
-    "Loopy command capture",
+    "Superloopy command capture",
     `startedAt: ${capture.startedAt}`,
     `finishedAt: ${capture.finishedAt}`,
     `cwd: ${cwd}`,

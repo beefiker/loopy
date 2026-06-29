@@ -10,7 +10,7 @@ import { runUserPromptSubmitHook } from "../src/hooks.js";
 import { createLoop } from "../src/loop.js";
 
 async function tempRepo() {
-  return mkdtemp(join(tmpdir(), "loopy-engineer-"));
+  return mkdtemp(join(tmpdir(), "superloopy-engineer-"));
 }
 
 test("hasTeamTrigger fires on spaced, connected, and ultrawork escalations", () => {
@@ -86,14 +86,14 @@ test("runUserPromptSubmitHook injects the crew fan-out playbook in team mode, wi
   assert.match(context, /requested repository path differs from `cwd`/);
   assert.match(context, /implementation worker must own a real bounded implementation slice/);
   assert.match(context, /jinbe-final-gate-report\.md/);
-  assert.match(context, /\.loopy\/evidence\/gate\.json/);
+  assert.match(context, /\.superloopy\/evidence\/gate\.json/);
   assert.match(context, /role completion line/);
   assert.match(context, /git status --short --untracked-files=all/);
   assert.match(context, /git ls-files --others --exclude-standard/);
-  assert.match(context, /run `loopy loop fleet --json` before the final gate/);
+  assert.match(context, /run `superloopy loop fleet --json` before the final gate/);
   // The team keyword is stripped from the brief that seeds the loop.
-  assert.match(context, /loopy loop begin --brief 'migrate the auth module'/);
-  assert.equal(existsSync(join(repo, ".loopy", "goals.json")), false);
+  assert.match(context, /superloopy loop begin --brief 'migrate the auth module'/);
+  assert.equal(existsSync(join(repo, ".superloopy", "goals.json")), false);
 });
 
 test("runUserPromptSubmitHook treats the connected loopycrew form as team mode with a clean brief", async () => {
@@ -107,8 +107,8 @@ test("runUserPromptSubmitHook treats the connected loopycrew form as team mode w
   assert.match(context, /Crew fan-out \(team mode\)/);
   assert.match(context, /multi_agent_v1\.spawn_agent/);
   // The connected keyword is stripped from the brief that seeds the loop.
-  assert.match(context, /loopy loop begin --brief 'migrate the auth module'/);
-  assert.equal(existsSync(join(repo, ".loopy", "goals.json")), false);
+  assert.match(context, /superloopy loop begin --brief 'migrate the auth module'/);
+  assert.equal(existsSync(join(repo, ".superloopy", "goals.json")), false);
 });
 
 test("runUserPromptSubmitHook treats the standalone ultrawork keyword as team mode with a clean brief", async () => {
@@ -122,8 +122,8 @@ test("runUserPromptSubmitHook treats the standalone ultrawork keyword as team mo
   assert.match(context, /Crew fan-out \(team mode\)/);
   assert.match(context, /multi_agent_v1\.spawn_agent/);
   // The ultrawork keyword is stripped from the brief that seeds the loop.
-  assert.match(context, /loopy loop begin --brief 'migrate the auth module'/);
-  assert.equal(existsSync(join(repo, ".loopy", "goals.json")), false);
+  assert.match(context, /superloopy loop begin --brief 'migrate the auth module'/);
+  assert.equal(existsSync(join(repo, ".superloopy", "goals.json")), false);
 });
 
 test("runUserPromptSubmitHook stays solo on a plain loopy task but advertises team mode", async () => {
@@ -154,5 +154,5 @@ test("runUserPromptSubmitHook re-injects the crew playbook when resuming with lo
   assert.match(context, /A loop is already in progress/);
   assert.match(context, /Crew fan-out \(team mode\)/);
   assert.match(context, /multi_agent_v1\.spawn_agent/);
-  assert.match(context, /run `loopy loop fleet --json` before the final gate/);
+  assert.match(context, /run `superloopy loop fleet --json` before the final gate/);
 });

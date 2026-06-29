@@ -17,7 +17,7 @@ export function resolveEvidenceArtifact(cwd, artifactPath, scope) {
   const resolved = isAbsolute(artifactPath) ? resolve(artifactPath) : resolve(cwd, artifactPath);
   const rel = relative(root, resolved);
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) {
-    throw new Error("Evidence artifact must live under .loopy/evidence.");
+    throw new Error("Evidence artifact must live under .superloopy/evidence.");
   }
   if (!existsSync(resolved)) {
     throw new Error(`Evidence artifact does not exist: ${artifactPath}`);
@@ -28,7 +28,7 @@ export function resolveEvidenceArtifact(cwd, artifactPath, scope) {
   const realRoot = realpathSync(root);
   const realArtifact = realpathSync(resolved);
   if (!isPathInsideDirectory(realArtifact, realRoot)) {
-    throw new Error("Evidence artifact must resolve under .loopy/evidence.");
+    throw new Error("Evidence artifact must resolve under .superloopy/evidence.");
   }
   const stat = statSync(resolved);
   if (!stat.isFile()) {
@@ -63,7 +63,7 @@ export function resolveEvidenceOutputPath(cwd, artifactPath, scope) {
   const resolved = isAbsolute(artifactPath) ? resolve(artifactPath) : resolve(cwd, artifactPath);
   const rel = relative(root, resolved);
   if (rel === "" || rel.startsWith("..") || isAbsolute(rel)) {
-    throw new Error("Evidence artifact must live under .loopy/evidence.");
+    throw new Error("Evidence artifact must live under .superloopy/evidence.");
   }
   if (existsSync(resolved) && !statSync(resolved).isFile()) {
     throw new Error(`Evidence artifact is not a file: ${artifactPath}`);
@@ -93,8 +93,8 @@ export function validateQualityGate(cwd, value, scope) {
     artifacts: artifacts.map((artifact) => resolveEvidenceArtifact(cwd, artifact, scope))
   };
   // Audit is opt-in for the default gate (mandatory only for review/matrix
-  // gates). When LOOPY_AUDIT=on, require a valid audit section here too.
-  if (String(process.env.LOOPY_AUDIT ?? "off").toLowerCase() === "on") {
+  // gates). When SUPERLOOPY_AUDIT=on, require a valid audit section here too.
+  if (String(process.env.SUPERLOOPY_AUDIT ?? "off").toLowerCase() === "on") {
     result.audit = validateAuditSection(value.audit, (artifactPath) => resolveEvidenceArtifact(cwd, artifactPath, scope).relativePath);
   }
   return result;

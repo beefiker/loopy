@@ -5,23 +5,23 @@ import { join } from "node:path";
 import { checkDesignAudit } from "./design-audit.js";
 import { checkFileAudit } from "./file-audit.js";
 import { checkComparisonSimilarity } from "./comparison-similarity.js";
-import { LOOPY_AGENT_NAMES } from "./agents.js";
+import { SUPERLOOPY_AGENT_NAMES } from "./agents.js";
 import { checkModelPolicy } from "./model-policy.js";
 
-const FILE_AUDIT_PATH = "docs/loopy-file-audit.md";
-const GATE_NOTES_PATH = "docs/loopy-gate-notes.md";
-const DESIGN_AUDIT_PATH = "docs/loopy-design-audit.md";
+const FILE_AUDIT_PATH = "docs/superloopy-file-audit.md";
+const GATE_NOTES_PATH = "docs/superloopy-gate-notes.md";
+const DESIGN_AUDIT_PATH = "docs/superloopy-design-audit.md";
 const GATE_NOTE_SECTIONS = ["Gate Compatibility", "Golden Scenarios", "Host Contract"];
 const GATE_GOLDEN_TESTS = ["test/golden-hooks.test.js", "test/golden-review-gate.test.js", "test/golden-matrix-gate.test.js"];
 const MAX_REVIEWABLE_LINES = 500;
 const RUNTIME_IGNORE_SAMPLES = [
-  ".loopy/goals.json",
-  ".loopy/evidence/report.md",
+  ".superloopy/goals.json",
+  ".superloopy/evidence/report.md",
   ".DS_Store",
   "docs/.DS_Store",
   "node_modules/example/index.js",
   "coverage/index.html",
-  "loopy.log"
+  "superloopy.log"
 ];
 const GENERATED_INSTALL_FILES = new Set([
   ".codex-marketplace-install.json"
@@ -36,7 +36,7 @@ export async function runDoctor(cwd, options = {}) {
   const runtimeBoundary = checkRuntimeBoundary(cwd);
   const fileAudit = await checkFileAudit(cwd, {
     auditPath: FILE_AUDIT_PATH,
-    policy: "loopy-native-boundary",
+    policy: "superloopy-native-boundary",
     listFiles: listGitVisibleFiles
   });
   const gateNotes = await checkGateNotes(cwd);
@@ -61,7 +61,7 @@ export async function runDoctor(cwd, options = {}) {
 }
 
 export function formatDoctor(result) {
-  const lines = ["Loopy doctor"];
+  const lines = ["Superloopy doctor"];
   for (const [name, check] of Object.entries(result.checks)) {
     lines.push(`- ${name}: ${check.ok ? "ok" : "fail"}${doctorDetail(name, check)}`);
   }
@@ -77,7 +77,7 @@ function doctorDetail(name, check) {
 function comparisonSimilarityDetail(check) {
   if (check.checked === false) return "skipped; pass `--comparison-path PATH` to compare copied code-shaped blocks";
   if (check.message !== undefined) return check.message;
-  return `checked; ${check.scanned} Loopy files against ${check.checkedReferenceFiles} comparison files`;
+  return `checked; ${check.scanned} Superloopy files against ${check.checkedReferenceFiles} comparison files`;
 }
 
 async function checkPluginManifest(cwd) {
@@ -85,7 +85,7 @@ async function checkPluginManifest(cwd) {
   if (!existsSync(path)) return fail("Missing .codex-plugin/plugin.json.");
   try {
     const manifest = JSON.parse(await readFile(path, "utf8"));
-    if (manifest.name !== "loopy") return fail("Plugin name must be loopy.");
+    if (manifest.name !== "superloopy") return fail("Plugin name must be superloopy.");
     if (manifest.skills !== "./skills/") return fail("Plugin manifest must expose ./skills/.");
     if (!Array.isArray(manifest.hooks) || manifest.hooks.length === 0) return fail("Plugin manifest must list hooks.");
     return { ok: true, manifest };
@@ -120,10 +120,10 @@ async function checkHooks(cwd, hooks) {
 }
 
 async function checkSkills(cwd) {
-  const path = join(cwd, "skills", "loopy-loop", "SKILL.md");
-  if (!existsSync(path)) return fail("Missing skills/loopy-loop/SKILL.md.");
+  const path = join(cwd, "skills", "superloopy-loop", "SKILL.md");
+  if (!existsSync(path)) return fail("Missing skills/superloopy-loop/SKILL.md.");
   const content = await readFile(path, "utf8");
-  if (!/^---\nname: loopy-loop/m.test(content)) return fail("loopy-loop skill frontmatter is invalid.");
+  if (!/^---\nname: superloopy-loop/m.test(content)) return fail("superloopy-loop skill frontmatter is invalid.");
   return { ok: true };
 }
 
@@ -272,7 +272,7 @@ function listIgnoredSamples(cwd, samples) {
 function isRuntimeFile(file) {
   return file === ".DS_Store"
     || file.endsWith("/.DS_Store")
-    || file.startsWith(".loopy/")
+    || file.startsWith(".superloopy/")
     || file.startsWith("node_modules/")
     || file.startsWith("coverage/")
     || file.endsWith(".log");
@@ -287,7 +287,7 @@ function collectCommands(value) {
   });
 }
 
-// Coherence between the agents Loopy dispatches, the agents it installs, and the hook
+// Coherence between the agents Superloopy dispatches, the agents it installs, and the hook
 // matchers that gate them. Catches the auditor-install gap class of bug: an agent named
 // in a task() dispatch directive that is never installed or never matched by a hook.
 async function checkDispatchCoherence(cwd) {
@@ -297,19 +297,19 @@ async function checkDispatchCoherence(cwd) {
     const matched = (name) => matchers.some((re) => re.test(name));
     const hasToml = (name) => existsSync(join(agentsDir, `${name}.toml`));
 
-    const missingToml = LOOPY_AGENT_NAMES.filter((name) => !hasToml(name));
-    const unmatched = LOOPY_AGENT_NAMES.filter((name) => !matched(name));
+    const missingToml = SUPERLOOPY_AGENT_NAMES.filter((name) => !hasToml(name));
+    const unmatched = SUPERLOOPY_AGENT_NAMES.filter((name) => !matched(name));
     const dispatched = await collectDispatchedAgentTypes(cwd);
-    const undispatchable = dispatched.filter((name) => !LOOPY_AGENT_NAMES.includes(name) || !hasToml(name) || !matched(name));
+    const undispatchable = dispatched.filter((name) => !SUPERLOOPY_AGENT_NAMES.includes(name) || !hasToml(name) || !matched(name));
 
     const problems = [];
     if (missingToml.length > 0) problems.push(`installable agents missing .codex/agents/<name>.toml: ${missingToml.join(", ")}`);
     if (unmatched.length > 0) problems.push(`installable agents with no SubagentStop matcher: ${unmatched.join(", ")}`);
     if (undispatchable.length > 0) problems.push(`dispatched subagent_type not installable/matched: ${undispatchable.join(", ")}`);
     if (problems.length > 0) {
-      return { ok: false, policy: "dispatched-agents-are-installable-and-matched", agents: LOOPY_AGENT_NAMES, dispatched, message: `Dispatch coherence: ${problems.join("; ")}.` };
+      return { ok: false, policy: "dispatched-agents-are-installable-and-matched", agents: SUPERLOOPY_AGENT_NAMES, dispatched, message: `Dispatch coherence: ${problems.join("; ")}.` };
     }
-    return { ok: true, policy: "dispatched-agents-are-installable-and-matched", agents: LOOPY_AGENT_NAMES, dispatched };
+    return { ok: true, policy: "dispatched-agents-are-installable-and-matched", agents: SUPERLOOPY_AGENT_NAMES, dispatched };
   } catch (error) {
     return fail(error instanceof Error ? error.message : String(error));
   }
@@ -333,7 +333,7 @@ async function collectSubagentStopMatchers(cwd) {
 // comment or example elsewhere is not a dispatch and must not be treated as one.
 async function collectDispatchedAgentTypes(cwd) {
   const names = new Set();
-  for (const rel of ["src/audit.js", "skills/loopy-loop/SKILL.md", "README.md"]) {
+  for (const rel of ["src/audit.js", "skills/superloopy-loop/SKILL.md", "README.md"]) {
     const absolute = join(cwd, rel);
     if (!existsSync(absolute)) continue;
     const content = await readFile(absolute, "utf8");
@@ -344,7 +344,7 @@ async function collectDispatchedAgentTypes(cwd) {
   return [...names];
 }
 
-// Advisory (always ok): state plainly the host behaviors Loopy's hook-layer gates depend on
+// Advisory (always ok): state plainly the host behaviors Superloopy's hook-layer gates depend on
 // but cannot verify from inside a hook. The deterministic completion floor (loop.js ->
 // audit-gate-verify.js) does NOT depend on any of these and gates completion even if every
 // hook is inert — so absent host support the gates degrade to advisory, not unsafe.
