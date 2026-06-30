@@ -5,6 +5,7 @@ import { parseJson } from "./args.js";
 import { resolveEvidenceArtifact } from "./artifacts.js";
 import { buildGuide } from "./guide.js";
 import { decideContinuation, transcriptTailHasMarker } from "./continuation.js";
+import { normalizeAgentType, receiptFromPayload } from "./receipt.js";
 import { hasEngineerTrigger, hasFrontendTrigger, hasKoreanWritingTrigger, renderFrontendTriggerContext, renderKoreanWritingTriggerContext, runEngineerTriggerHook } from "./engineer.js";
 import { applySteering, statusLoop } from "./loop.js";
 import { appendLedger, evidenceRelativeDir, goalsPath, scopeFromSessionId } from "./store.js";
@@ -34,9 +35,9 @@ const PROTECTED_STEERING_KEYS = new Set([
 export function runSubagentStopHook(payload) {
   if (!isRecord(payload)) return "";
   if (payload.hook_event_name !== "SubagentStop") return "";
-  if (!EVIDENCE_RECEIPT_AGENT_TYPES.has(payload.agent_type)) return "";
+  if (!EVIDENCE_RECEIPT_AGENT_TYPES.has(normalizeAgentType(payload.agent_type))) return "";
   if (transcriptHasContextPressureMarker(payload.transcript_path)) return "";
-  const receipt = extractReceipt(payload.last_assistant_message);
+  const receipt = receiptFromPayload(payload);
   if (receipt !== null) {
     try {
       resolveEvidenceReceipt(payload, receipt);
@@ -224,11 +225,6 @@ function readNonEmptyString(value) {
   return trimmed.length === 0 ? null : trimmed;
 }
 
-function extractReceipt(message) {
-  if (typeof message !== "string") return null;
-  const match = /(?:EVIDENCE_RECORDED|SUPERLOOPY_EVIDENCE):\s*(\S+)/u.exec(message);
-  return match?.[1] ?? null;
-}
 
 async function runContextInjectionHook(payload, hookEventName) {
   const context = await readContextInjection(payload);

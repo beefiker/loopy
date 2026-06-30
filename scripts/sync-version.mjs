@@ -78,7 +78,8 @@ async function stampPackageLockVersion(path, version) {
 export function manifestTargets(repoRoot) {
   return [
     join(repoRoot, "package.json"),
-    join(repoRoot, ".codex-plugin", "plugin.json")
+    join(repoRoot, ".codex-plugin", "plugin.json"),
+    join(repoRoot, ".claude-plugin", "plugin.json")
   ];
 }
 

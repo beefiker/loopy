@@ -18,6 +18,16 @@ Superloopy is its own lightweight loop harness: one small CLI, repo-local `.supe
 | `.codex/agents/jinbe.toml` | Project-scoped Codex gate reviewer for final evidence integration. | Uses Superloopy evidence, review, QA, audit, criteria coverage, and advisory model policy as the authority. |
 | `.codex/agents/usopp.toml` | Project-scoped Codex QA agent for artifact-backed scenario evidence. | Superloopy-native QA report contract plus advisory model policy; no product edits. |
 | `.codex-plugin/plugin.json` | Local plugin metadata, hook registration, skill entry, and default Superloopy prompt. | Uses Codex plugin shape only; no external assets. |
+| `.claude-plugin/plugin.json` | Claude Code plugin manifest: skills/agents/hooks entries plus metadata for a one-repo Claude install. | Uses the Claude plugin shape only; Superloopy-native, no vendored code. |
+| `.claude-plugin/marketplace.json` | Claude Code marketplace entry exposing superloopy from this repo root. | Uses Claude marketplace metadata only; no external assets. |
+| `hooks/hooks.json` | Consolidated Claude hook wiring routing the five events to the Superloopy CLI via ${CLAUDE_PLUGIN_ROOT}. | Thin Superloopy hook wrapper; Claude root variable and native event names only. |
+| `agents/franky.md` | Claude-format bounded implementation subagent (frontmatter + ported instructions). | Superloopy-native role; advisory model alias, ported prose, no vendored code. |
+| `agents/zoro.md` | Claude-format skeptical code-review subagent. | Superloopy-native role; advisory model alias, ported prose, no vendored code. |
+| `agents/usopp.md` | Claude-format QA subagent. | Superloopy-native role; advisory model alias, ported prose, no vendored code. |
+| `agents/jinbe.md` | Claude-format final gate-review subagent. | Superloopy-native role; advisory model alias, ported prose, no vendored code. |
+| `agents/robin.md` | Claude-format read-only evidence auditor subagent. | Superloopy-native role; read-only via tools allowlist, advisory model alias, no vendored code. |
+| `agents/nami.md` | Claude-format read-only codebase navigator subagent. | Superloopy-native role; read-only via tools allowlist, advisory fast model alias, no vendored code. |
+| `docs/superloopy-model-policy-claude.md` | Advisory Claude model-alias policy for the bundled subagents. | Superloopy-native; treats model choice as steering, not proof. |
 | `.gitignore` | Keeps runtime state, logs, coverage, and dependencies out of source control. | Superloopy runtime ignore set only. |
 | `LICENSE` | MIT license for this repo. | Standard license text. |
 | `SECURITY.md` | Vulnerability disclosure policy required for plugin catalog submissions. | Process documentation only; avoids publishing exploit details or secrets. |
@@ -200,6 +210,8 @@ Superloopy is its own lightweight loop harness: one small CLI, repo-local `.supe
 | `src/model-policy.js` | Doctor helper that checks model-policy docs and bundled agent TOML defaults. | Advisory policy only; never treats model choice as proof. |
 | `src/plan-summary.js` | Compact derived progress summary. | Superloopy-only helper. |
 | `src/pre-tool-use.js` | PreToolUse guard for malformed `create_goal` calls and premature native `update_goal` completion. | Uses Superloopy plan completion as the authority before native goal completion. |
+| `src/receipt.js` | Host-agnostic receipt recovery for SubagentStop: prefers last_assistant_message, falls back to the subagent transcript tail's last match. | Superloopy-native; node-only, shared by the Codex and Claude hook paths. |
+| `test/host-adapter.test.js` | Unit tests for host-agnostic receipt recovery (direct + transcript fallback, evidence + audit). | Superloopy-native test only. |
 | `src/prove.js` | ID-free proof shortcut for the active next unresolved criterion. | Superloopy-specific proof path. |
 | `src/report.js` | Writes portable markdown evidence reports with Evidence Summary section, Evidence Warnings section, and next action. | Superloopy-only reporting layer. |
 | `src/review-gate.js` | Validator for strict five-section review quality gates. | Keeps compatible shape under Superloopy-native module name. |

@@ -116,9 +116,28 @@ export function formatBinInstallResult(result) {
   ].join("\n") + "\n";
 }
 
+// Claude Code exports CLAUDE_PLUGIN_ROOT into the plugin's hook subprocess; Codex does not.
+// It is the host signal that distinguishes the two runtimes at bootstrap time.
+export function isClaudeHost(env = process.env) {
+  return typeof env.CLAUDE_PLUGIN_ROOT === "string" && env.CLAUDE_PLUGIN_ROOT.trim().length > 0;
+}
+
 export async function bootstrapSuperloopy(cwd, argv = [], options = {}) {
   const env = options.env ?? process.env;
   const homeDir = options.homeDir ?? homedir();
+  // On Claude Code the agents (agents/*.md), hooks, and skills are plugin-bundled and the hooks
+  // invoke the CLI directly via ${CLAUDE_PLUGIN_ROOT}, so there is nothing to install into
+  // ~/.codex and no command wrapper to place. Skip the Codex bootstrap cleanly.
+  if (isClaudeHost(env)) {
+    return {
+      ok: true,
+      kind: "bootstrap",
+      host: "claude",
+      bin: { status: "unchanged", onPath: true, target: "(plugin-bundled)", next: "On Claude Code, Superloopy runs from the bundled plugin; no CLI wrapper is installed." },
+      agents: { ok: true, target: "(plugin-bundled)", agents: [] },
+      next: "Superloopy is plugin-bundled on Claude Code (skills, agents, hooks). No ~/.codex install performed."
+    };
+  }
   const bin = await installBinShim(cwd, argv, {
     env,
     homeDir,
