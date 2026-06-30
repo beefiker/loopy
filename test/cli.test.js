@@ -151,6 +151,28 @@ test("CLI install writes command wrapper and bundled agents", async () => {
   assert.match(help.stdout, /superloopy loop <subcommand>/);
 });
 
+test("CLI bin install updates an older generated Superloopy shim without --force", async () => {
+  const repo = await tempRepo();
+  const binDir = join(repo, "bin");
+  await mkdir(binDir, { recursive: true });
+  const binPath = join(binDir, process.platform === "win32" ? "superloopy.cmd" : "superloopy");
+  const oldShim = process.platform === "win32"
+    ? '@echo off\r\nnode "C:\\Users\\me\\.codex\\plugins\\cache\\beefiker\\superloopy\\0.3.0\\src\\cli.js" %*\r\n'
+    : "#!/usr/bin/env sh\nexec node '/Users/me/.codex/plugins/cache/beefiker/superloopy/0.3.0/src/cli.js' \"$@\"\n";
+  await writeFile(binPath, oldShim, "utf8");
+
+  const result = await installBinShim(repo, ["--bin-dir", binDir], {
+    env: { PATH: `${binDir}${process.platform === "win32" ? ";" : ":"}${process.env.PATH ?? ""}` },
+    homeDir: join(repo, "home")
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.status, "updated");
+  const updated = await readFile(binPath, "utf8");
+  assert.notEqual(updated, oldShim);
+  assert.match(updated, /src[\\/]cli\.js/);
+});
+
 test("CLI bin install uses Windows-safe PATH detection and PowerShell hint", async () => {
   const repo = await tempRepo();
   const binDir = join(repo, "Bin");

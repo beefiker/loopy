@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { checkDesignAudit } from "./design-audit.js";
@@ -232,6 +232,7 @@ function listGitVisibleFiles(cwd) {
     encoding: "utf8"
   });
   if (result.status !== 0) {
+    if (isNotGitRepository(result)) return listFilesystemVisibleFiles(cwd);
     throw new Error(result.stderr.trim() || "Unable to list Git-visible files.");
   }
   return result.stdout
@@ -249,6 +250,7 @@ function listGitTrackedFiles(cwd) {
     encoding: "utf8"
   });
   if (result.status !== 0) {
+    if (isNotGitRepository(result)) return [];
     throw new Error(result.stderr.trim() || "Unable to list Git-tracked files.");
   }
   return result.stdout
@@ -265,12 +267,39 @@ function listIgnoredSamples(cwd, samples) {
     input: `${samples.join("\n")}\n`
   });
   if (result.status !== 0 && result.status !== 1) {
+    if (isNotGitRepository(result)) return new Set(samples);
     throw new Error(result.stderr.trim() || "Unable to check ignored runtime files.");
   }
   return new Set(result.stdout
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean));
+}
+
+function listFilesystemVisibleFiles(cwd) {
+  const files = [];
+  walkVisibleFiles(cwd, "", files);
+  return files
+    .filter((file) => !GENERATED_INSTALL_FILES.has(file))
+    .filter((file) => !isRuntimeFile(file))
+    .sort();
+}
+
+function walkVisibleFiles(cwd, prefix, files) {
+  for (const entry of readdirSync(join(cwd, prefix), { withFileTypes: true })) {
+    const file = prefix.length === 0 ? entry.name : `${prefix}/${entry.name}`;
+    if (entry.isDirectory()) {
+      if (!SKIP_FILESYSTEM_DIRS.has(entry.name)) walkVisibleFiles(cwd, file, files);
+      continue;
+    }
+    if (entry.isFile()) files.push(file);
+  }
+}
+
+const SKIP_FILESYSTEM_DIRS = new Set([".git", ".superloopy", "coverage", "dist", "node_modules", "vendor"]);
+
+function isNotGitRepository(result) {
+  return /not a git repository/u.test(result.stderr ?? "");
 }
 
 function isRuntimeFile(file) {

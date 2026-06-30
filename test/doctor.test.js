@@ -36,6 +36,23 @@ async function tempRepoCopy() {
   return repo;
 }
 
+async function tempInstalledCacheCopy() {
+  const repo = await mkdtemp(join(tmpdir(), "superloopy-cache-"));
+  const result = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], {
+    cwd: process.cwd(),
+    encoding: "utf8"
+  });
+  assert.equal(result.status, 0, result.stderr);
+  for (const file of result.stdout.split("\n").filter(Boolean)) {
+    const source = join(process.cwd(), file);
+    if (!existsSync(source)) continue;
+    const target = join(repo, file);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, await readFile(source));
+  }
+  return repo;
+}
+
 async function tempComparisonTree(files) {
   const repo = await mkdtemp(join(tmpdir(), "superloopy-comparison-"));
   for (const [file, content] of Object.entries(files)) {
@@ -137,6 +154,17 @@ test("doctor ignores Codex marketplace install metadata in plugin cache", async 
 
   assert.equal(result.ok, true);
   assert.equal(result.checks.fileAudit.ok, true);
+});
+
+test("doctor accepts installed plugin caches that are not Git repositories", async () => {
+  const repo = await tempInstalledCacheCopy();
+
+  const result = await runDoctor(repo);
+
+  assert.equal(result.ok, true);
+  assert.equal(result.checks.runtimeBoundary.ok, true);
+  assert.equal(result.checks.fileAudit.ok, true);
+  assert.equal(result.checks.reviewability.ok, true);
 });
 
 test("doctor accepts skill frontmatter after CRLF checkout", async () => {

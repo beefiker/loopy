@@ -74,7 +74,9 @@ export async function installBinShim(cwd, argv, options = {}) {
   const content = binShimContent(CLI_PATH, platform);
 
   await mkdir(targetDir, { recursive: true });
-  const status = await installOneTextFile(target, content, force, platform === "win32" ? undefined : 0o755);
+  const status = await installOneTextFile(target, content, force, platform === "win32" ? undefined : 0o755, {
+    replaceIf: (existing) => isGeneratedSuperloopyBinShim(existing, platform)
+  });
   const onPath = pathContainsDir(env.PATH, targetDir, platform);
   return {
     ok: status !== "conflict",
@@ -205,7 +207,7 @@ async function installOneAgent(sourcePath, targetPath, force) {
   return "updated";
 }
 
-async function installOneTextFile(targetPath, content, force, mode) {
+async function installOneTextFile(targetPath, content, force, mode, options = {}) {
   if (!existsSync(targetPath)) {
     await writeFile(targetPath, content, "utf8");
     if (mode !== undefined) await chmod(targetPath, mode);
@@ -216,10 +218,18 @@ async function installOneTextFile(targetPath, content, force, mode) {
     if (mode !== undefined) await chmod(targetPath, mode);
     return "unchanged";
   }
-  if (!force) return "conflict";
+  if (!force && !options.replaceIf?.(targetContent)) return "conflict";
   await writeFile(targetPath, content, "utf8");
   if (mode !== undefined) await chmod(targetPath, mode);
   return "updated";
+}
+
+function isGeneratedSuperloopyBinShim(content, platform) {
+  const normalized = content.replace(/\r\n/gu, "\n");
+  if (platform === "win32") {
+    return /^@echo off\nnode "[^"\n]*[\\/]superloopy(?:[\\/][^"\n]*)?[\\/]src[\\/]cli\.js" %\*\n?$/iu.test(normalized);
+  }
+  return /^#!\/usr\/bin\/env sh\nexec node .*[\\/]superloopy(?:[\\/][^'"\n ]*)?[\\/]src[\\/]cli\.js'? "\$@"\n?$/u.test(normalized);
 }
 
 function resolveBinDir(cwd, argv, env, homeDir) {
