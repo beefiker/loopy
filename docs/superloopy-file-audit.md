@@ -28,6 +28,7 @@ Superloopy is its own lightweight loop harness: one small CLI, repo-local `.supe
 | `agents/robin.md` | Claude-format read-only evidence auditor subagent. | Superloopy-native role; read-only via tools allowlist, advisory model alias, no vendored code. |
 | `agents/nami.md` | Claude-format read-only codebase navigator subagent. | Superloopy-native role; read-only via tools allowlist, advisory fast model alias, no vendored code. |
 | `docs/superloopy-model-policy-claude.md` | Advisory Claude model-alias policy for the bundled subagents. | Superloopy-native; treats model choice as steering, not proof. |
+| `docs/superloopy-claude-validation.md` | Live validation checklist for the Claude Code dual-host port: install, component load, the four empirical linchpins, a full loop, and degrade-safety confirmation. | Superloopy-native operator doc; no runtime logic or vendored code. |
 | `.gitignore` | Keeps runtime state, logs, coverage, and dependencies out of source control. | Superloopy runtime ignore set only. |
 | `LICENSE` | MIT license for this repo. | Standard license text. |
 | `SECURITY.md` | Vulnerability disclosure policy required for plugin catalog submissions. | Process documentation only; avoids publishing exploit details or secrets. |

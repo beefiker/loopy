@@ -1,12 +1,21 @@
 {
   "name": "superloopy",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Lightweight loop harness with strict evidence gates — Claude Code edition.",
   "homepage": "https://github.com/beefiker/superloopy#readme",
   "repository": "https://github.com/beefiker/superloopy",
   "license": "MIT",
-  "author": { "name": "beefiker" },
-  "keywords": ["claude-code", "agent-skills", "evidence-gates", "proof-of-done", "loop", "subagents"],
+  "author": {
+    "name": "beefiker"
+  },
+  "keywords": [
+    "claude-code",
+    "agent-skills",
+    "evidence-gates",
+    "proof-of-done",
+    "loop",
+    "subagents"
+  ],
   "skills": "./skills/",
   "agents": "./agents/",
   "hooks": "./hooks/hooks.json"

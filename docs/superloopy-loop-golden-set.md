@@ -70,6 +70,7 @@ Total: 100 points.
 | `agents/robin.md` | Audit coverage. | Must define the read-only Claude auditor subagent, the SUPERLOOPY_AUDIT receipt, and a read-only tools allowlist. |
 | `agents/nami.md` | Audit coverage. | Must define the read-only Claude navigator subagent (writes no receipt) with a read-only tools allowlist. |
 | `docs/superloopy-model-policy-claude.md` | `test/docs.test.js` model-policy assertions, audit coverage. | Must record the Claude model aliases and the advisory steering-not-proof rule mapped from the Codex policy. |
+| `docs/superloopy-claude-validation.md` | Audit coverage and reviewability check. | Must give a runnable Claude Code validation checklist covering install, components, the SubagentStop receipt/agent_type/env-var/steering linchpins, a full loop, and degrade-safety. |
 | `.gitignore` | Doctor runtime-boundary ignored samples and installed-cache docs coverage. | `.superloopy/`, logs, coverage, dependencies, OS noise, and Codex marketplace metadata must stay out of source control. |
 | `LICENSE` | Audit coverage and reviewability check. | Must remain a source file with no runtime implementation content. |
 | `SECURITY.md` | Hashgraph catalog readiness. | Must document vulnerability reporting without publishing exploit details or secrets. |
