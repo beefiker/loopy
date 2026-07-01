@@ -131,6 +131,10 @@ test("doctor skill stays Superloopy-native instead of LazyCodex-style source dri
     /deterministic completion floor/i,
     /superloopy loop check/,
     /superloopy loop status --json/,
+    /read-only diagnosis cannot prove completion safety/i,
+    /superloopy loop review/,
+    /superloopy loop checkpoint/,
+    /superloopy loop finish/,
     /hostContract/,
     /dispatchCoherence/,
     /reviewability/
