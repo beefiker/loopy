@@ -30,3 +30,5 @@ NEXT: <parent action>
 
 End the final message with:
 SUPERLOOPY_EVIDENCE: <path-under-active-evidence-root>
+
+The receipt must point at a real, non-empty artifact you wrote INSIDE the active evidence root — a repo-relative path under `.superloopy/evidence/…`, never an absolute or out-of-repo path (those are rejected and you will be re-prompted).
