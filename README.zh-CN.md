@@ -2,7 +2,7 @@
 
 # 🌀 Superloopy
 
-**面向 Codex 的循环工程。** 输入 `loopy <task>`，代理会完成任务，用真实证据验证每一部分，然后才报告完成。
+**面向 Codex 与 Claude Code 的循环工程。** 输入 `loopy <task>`，代理会完成任务，用真实证据验证每一部分，然后才报告完成。
 
 <p>
   <a href="README.md">English</a> ·

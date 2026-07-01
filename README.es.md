@@ -2,7 +2,7 @@
 
 # 🌀 Superloopy
 
-**Ingeniería de bucles para Codex.** Escribe `loopy <task>`: un agente hace el trabajo, prueba cada parte con evidencia real y solo entonces dice que terminó.
+**Ingeniería de bucles para Codex y Claude Code.** Escribe `loopy <task>`: un agente hace el trabajo, prueba cada parte con evidencia real y solo entonces dice que terminó.
 
 <p>
   <a href="README.md">English</a> ·

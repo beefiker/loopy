@@ -2,7 +2,7 @@
 
 # 🌀 Superloopy
 
-**Codex용 루프 엔지니어링.** `loopy <task>`로 시작하면 에이전트가 일을 맡습니다. 근거를 남기지 못한 작업은 완료로 치지 않습니다.
+**Codex와 Claude Code를 위한 루프 엔지니어링.** `loopy <task>`로 시작하면 에이전트가 일을 맡습니다. 근거를 남기지 못한 작업은 완료로 치지 않습니다.
 
 <p>
   <a href="README.md">English</a> ·
