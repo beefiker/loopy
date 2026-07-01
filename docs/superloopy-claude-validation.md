@@ -57,14 +57,18 @@ Then dispatch any subagent (e.g. start a `loopy team` task that spawns `franky`,
 
 ## Results
 
+Live capture on real Claude Code (2026-07-01): a temporary `SubagentStop` observation hook in `settings.local.json` fired **mid-session without a restart** and captured a real payload from a dispatched `superloopy:nami` subagent.
+
 | Item | Expected | Observed | Pass | Follow-up |
 | --- | --- | --- | --- | --- |
-| Install + components | superloopy + 6 agents + skills load | | | |
-| A: receipt field | last_assistant_message or transcript fallback recovers receipt | | | |
-| B: agent_type | matcher fires (bare or namespaced) | | | |
-| C: env vars | Stop continuation + auto-context toggle | | | |
-| D: steering JSON | directive applied, no parse error | | | |
-| Full loop | gated begin→prove→check→finish | | | |
-| Degrade-safety | floor blocks completion without artifacts | | | |
+| Install + components | superloopy + 6 agents + skills load | 6 agents dispatchable as `superloopy:<name>`; skills present | ✅ | — |
+| A: receipt field | last_assistant_message or transcript fallback recovers receipt | **`last_assistant_message` IS present** (string, carried the `SUPERLOOPY_EVIDENCE:` line); both `transcript_path` and `agent_transcript_path` also present. `receiptFromPayload()` recovered the exact path from the real payload. | ✅ | Docs implied it was absent — the direct field is the primary path on Claude, same as Codex; the transcript fallback is a rarely-hit safety net. |
+| B: agent_type | matcher fires (bare or namespaced) | `agent_type` = `"superloopy:nami"` (namespaced); anchored matcher `^(?:superloopy:)?…$` matches it and `normalizeAgentType` → `nami`. | ✅ | — |
+| C: env vars | Stop continuation + auto-context toggle | Settings-based hook fired and received the full payload (settings hooks reach the subprocess); dedicated `SUPERLOOPY_STOP_HOOK`/`SUPERLOOPY_AUTO_CONTEXT` toggles not separately exercised. | ◑ | Confirm the env-var toggles in a full loop. |
+| D: steering JSON | directive applied, no parse error | not yet tested | ☐ | Send a `SUPERLOOPY_STEER:` prompt in a live loop. |
+| Full loop | gated begin→prove→check→finish | not yet run with the refreshed (hardened) plugin — the live session had marketplace `0.6.1` loaded | ☐ | Refresh the plugin from the `beefiker` directory marketplace (or `--plugin-dir` the checkout) and run one loop. |
+| Degrade-safety | floor blocks completion without artifacts | covered by the deterministic floor + 306 unit tests; gate refuses finish without artifacts | ✅ | — |
 
-Remove the temporary observation hook from `settings.json` when done.
+The two empirically-crucial linchpins (A receipt field, B agent_type) are **confirmed on real Claude Code**. C/D and a full end-to-end loop with the hardened plugin remain for a fresh session.
+
+To reproduce: add a temporary `{ "hooks": { "SubagentStop": [ { "hooks": [ { "type": "command", "command": "cat >> /tmp/superloopy-subagentstop.jsonl" } ] } ] } }` to `settings.local.json`, dispatch any `superloopy:` subagent, inspect the file, then remove the hook.
